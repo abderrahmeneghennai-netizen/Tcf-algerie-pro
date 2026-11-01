@@ -4,7 +4,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'dz.tcfalgerie.pro',
   appName: 'TCF ALGÉRIE PRO',
-  webDir: '.'
+  webDir: 'www'
 };
 
 export default config;
