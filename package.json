@@ -1,0 +1,17 @@
+
+{
+  "name": "tcf-algerie-pro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application de préparation au TCF Canada",
+  "scripts": {
+    "build": "echo Build ready"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/android": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
