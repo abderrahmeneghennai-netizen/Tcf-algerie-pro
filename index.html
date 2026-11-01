@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102447">
+<title>TCF ALGÉRIE PRO</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#17243b}
+header{background:#102447;color:white;padding:28px 20px;text-align:center}
+header h1{margin:5px;font-size:27px}
+header p{color:#d8e4f5}
+main{max-width:700px;margin:20px auto;padding:0 15px}
+.card{background:white;padding:20px;margin:15px 0;border-radius:15px;box-shadow:0 3px 12px #15294b12}
+h2{color:#173c70}
+.skills{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.skill{background:#eaf1fb;padding:15px;border-radius:12px;text-align:center;font-weight:bold}
+button{background:#1763c6;color:white;border:0;padding:13px 18px;border-radius:9px;font-size:16px;cursor:pointer;margin:5px 0}
+button:hover{background:#104b99}
+.answer{display:block;width:100%;text-align:left;background:#edf2f9;color:#17243b;margin:8px 0}
+.answer:hover{background:#dce9fa}
+#result{font-weight:bold;margin-top:15px}
+footer{text-align:center;padding:25px;color:#66758c;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>TCF ALGÉRIE PRO</h1>
+<p>Prépare ton TCF Canada partout en Algérie</p>
+</header>
+<main>
+<section class="card">
+<h2>Bienvenue !</h2>
+<p>Entraîne-toi en français avec des exercices progressifs et découvre ton niveau.</p>
+<button onclick="startQuiz()">Commencer un exercice</button>
+</section>
+
+<section class="card">
+<h2>Les quatre compétences</h2>
+<div class="skills">
+<div class="skill">Compréhension orale</div>
+<div class="skill">Compréhension écrite</div>
+<div class="skill">Expression orale</div>
+<div class="skill">Expression écrite</div>
+</div>
+</section>
+
+<section class="card" id="quiz">
+<h2>Mini-test de compréhension écrite</h2>
+<p id="question">Appuie sur « Commencer un exercice » pour commencer.</p>
+<div id="answers"></div>
+<p id="result"></p>
+<button id="next" style="display:none" onclick="nextQuestion()">Question suivante</button>
+</section>
+
+<section class="card">
+<h2>Notre objectif</h2>
+<p>Une préparation accessible, claire et pratique pour les candidats au TCF Canada.</p>
+<p><strong>Plateforme indépendante de préparation.</strong> Non affiliée à France Éducation international ni à IRCC.</p>
+</section>
+</main>
+<footer>© 2026 TCF ALGÉRIE PRO — Version de démonstration</footer>
+
+<script>
+const questions=[
+{q:"Choisis la bonne réponse : Marie habite à Oran depuis cinq ans. Où habite-t-elle ?",a:["À Alger","À Oran","À Paris"],c:1},
+{q:"Le train part à 8 heures. À quelle heure faut-il arriver à la gare ?",a:["Après 9 heures","À 8 heures ou avant","À midi"],c:1},
+{q:"Paul est fatigué parce qu'il a beaucoup travaillé. Pourquoi est-il fatigué ?",a:["Il a beaucoup travaillé","Il a voyagé","Il a dormi"],c:0},
+{q:"Le magasin est fermé le dimanche. Quand est-il fermé ?",a:["Le lundi","Le samedi","Le dimanche"],c:2},
+{q:"Bien qu'il pleuve, les enfants jouent dehors. Quel temps fait-il ?",a:["Il pleut","Il neige","Il fait très chaud"],c:0}
+];
+let index=0,score=0,answered=false;
+function startQuiz(){index=0;score=0;showQuestion();document.getElementById("quiz").scrollIntoView({behavior:"smooth"});}
+function showQuestion(){
+answered=false;
+let q=questions[index];
+document.getElementById("question").textContent=(index+1)+"/"+questions.length+" — "+q.q;
+document.getElementById("answers").innerHTML="";
+document.getElementById("result").textContent="";
+document.getElementById("next").style.display="none";
+q.a.forEach((answer,i)=>{
+let b=document.createElement("button");
+b.className="answer";
+b.textContent=answer;
+b.onclick=()=>choose(i);
+document.getElementById("answers").appendChild(b);
+});
+}
+function choose(choice){
+if(answered)return;
+answered=true;
+let q=questions[index];
+if(choice===q.c){score++;document.getElementById("result").textContent="Bonne réponse !";}
+else{document.getElementById("result").textContent="Pas tout à fait. Bonne réponse : "+q.a[q.c];}
+document.getElementById("next").style.display="inline-block";
+document.getElementById("next").textContent=index===questions.length-1?"Voir mon résultat":"Question suivante";
+}
+function nextQuestion(){
+if(index<questions.length-1){index++;showQuestion();}
+else{
+document.getElementById("question").textContent="Exercice terminé !";
+document.getElementById("answers").innerHTML="";
+document.getElementById("result").textContent="Ton résultat : "+score+"/"+questions.length;
+document.getElementById("next").style.display="none";
+}
+}
+</script>
+</body>
+</html>
