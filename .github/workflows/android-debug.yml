@@ -1,0 +1,46 @@
+
+name: Build TCF Algerie Pro Android
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Installer les dependances
+        run: npm install
+
+      - name: Ajouter Android
+        run: npx cap add android
+
+      - name: Synchroniser Android
+        run: npx cap sync android
+
+      - name: Construire APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Publier APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TCF-Algerie-Pro-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
