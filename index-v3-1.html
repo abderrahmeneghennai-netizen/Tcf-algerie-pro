@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,218 +7,281 @@
 <meta name="theme-color" content="#081426">
 <title>TCF ALGÉRIE PRO V3.1</title>
 <style>
-:root{--bg:#081426;--panel:#11233d;--text:#f4f6fb;--muted:#aab8ca;--gold:#e5bd68;--line:#263b57;--good:#43b581;--bad:#e06c75}
-.light{--bg:#f2f5fa;--panel:#fff;--text:#17243a;--muted:#65748a;--line:#dce3ed}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;line-height:1.5}
-header{padding:18px;background:var(--panel);border-bottom:2px solid var(--gold);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-h1{font-size:21px;margin:0;color:var(--gold)} header small{color:var(--muted)}
-button,select,textarea,input{font:inherit}
-button{border:0;border-radius:9px;padding:11px 15px;background:var(--gold);color:#17243a;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.55;cursor:not-allowed}
-button.secondary{background:var(--panel);color:var(--text);border:1px solid var(--line)}
-main{max-width:950px;margin:auto;padding:18px}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
-nav button{flex:1;min-width:100px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:15px}
-h2{font-size:19px;color:var(--gold);margin-top:0} h3{font-size:16px}
-.muted{color:var(--muted)} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-.stat{padding:15px;background:var(--bg);border-radius:10px;text-align:center}
-.stat strong{display:block;font-size:25px;color:var(--gold)}
-.option{display:block;width:100%;text-align:left;margin:8px 0;background:var(--bg);color:var(--text);border:1px solid var(--line)}
-.option.selected{border:2px solid var(--gold)}
-input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);margin:8px 0}
-textarea{min-height:170px;resize:vertical}
-.hidden{display:none!important}
-#feedback{padding:12px;margin-top:12px;border-radius:8px;background:var(--bg)}
-.notice{border-left:3px solid var(--gold);padding:10px 12px;background:var(--bg);border-radius:6px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.row button{flex:1}
-.progressbar{height:8px;background:var(--bg);border-radius:9px;overflow:hidden;margin:10px 0}
-.progressbar span{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
-footer{text-align:center;color:var(--muted);padding:25px;font-size:12px}
-.tag{display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:20px;color:var(--muted);font-size:12px}
-@media(max-width:520px){header{align-items:flex-start}main{padding:12px}.card{padding:14px}nav button{min-width:85px;padding:10px 8px}}
+:root {
+--bg:#081426;
+--panel:#11233d;
+--text:#f4f6fb;
+--muted:#aab8ca;
+--gold:#e5bd68;
+--line:#263b57;
+--good:#43b581;
+--bad:#e06c75;
+}
+.light {
+--bg:#f2f5fa;
+--panel:#ffffff;
+--text:#17243a;
+--muted:#65748a;
+--line:#dce3ed;
+}
+* {box-sizing:border-box}
+body {
+margin:0;
+background:var(--bg);
+color:var(--text);
+font-family:Arial,sans-serif;
+line-height:1.5;
+}
+header {
+padding:18px;
+background:var(--panel);
+border-bottom:2px solid var(--gold);
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+flex-wrap:wrap;
+}
+h1 {font-size:21px;margin:0;color:var(--gold)}
+header small {color:var(--muted)}
+button,select,textarea,input {font:inherit}
+button {
+border:0;
+border-radius:9px;
+padding:11px 15px;
+background:var(--gold);
+color:#17243a;
+font-weight:bold;
+cursor:pointer;
+}
+button:disabled {opacity:.55}
+button.secondary {
+background:var(--panel);
+color:var(--text);
+border:1px solid var(--line);
+}
+main {max-width:950px;margin:auto;padding:18px}
+nav {
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-bottom:18px;
+}
+nav button {flex:1;min-width:100px}
+.card {
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:14px;
+padding:18px;
+margin-bottom:15px;
+}
+h2 {font-size:19px;color:var(--gold);margin-top:0}
+h3 {font-size:16px}
+.muted {color:var(--muted)}
+.grid {
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+gap:10px;
+}
+.stat {
+padding:15px;
+background:var(--bg);
+border-radius:10px;
+text-align:center;
+}
+.stat strong {
+display:block;
+font-size:25px;
+color:var(--gold);
+}
+.option {
+display:block;
+width:100%;
+text-align:left;
+margin:8px 0;
+background:var(--bg);
+color:var(--text);
+border:1px solid var(--line);
+}
+.option.selected {border:2px solid var(--gold)}
+input,select,textarea {
+width:100%;
+padding:12px;
+border-radius:8px;
+border:1px solid var(--line);
+background:var(--bg);
+color:var(--text);
+margin:8px 0;
+}
+textarea {min-height:170px;resize:vertical}
+.hidden {display:none!important}
+#feedback {
+padding:12px;
+margin-top:12px;
+border-radius:8px;
+background:var(--bg);
+}
+.notice {
+border-left:3px solid var(--gold);
+padding:10px 12px;
+background:var(--bg);
+border-radius:6px;
+}
+.row {
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+align-items:center;
+}
+.row button {flex:1}
+.progressbar {
+height:8px;
+background:var(--bg);
+border-radius:9px;
+overflow:hidden;
+margin:10px 0;
+}
+.progressbar span {
+display:block;
+height:100%;
+width:0;
+background:var(--gold);
+transition:width .2s;
+}
+footer {
+text-align:center;
+color:var(--muted);
+padding:25px;
+font-size:12px;
+}
+.tag {
+display:inline-block;
+padding:3px 8px;
+border:1px solid var(--line);
+border-radius:20px;
+color:var(--muted);
+font-size:12px;
+}
+@media(max-width:520px) {
+header {align-items:flex-start}
+main {padding:12px}
+.card {padding:14px}
+nav button {min-width:85px;padding:10px 8px}
+}
 </style>
 </head>
 <body>
+
 <header>
- <div><h1>TCF ALGÉRIE PRO</h1><small>Version 3.1 · Préparation aux examens</small></div>
- <button class="secondary" onclick="toggleTheme()">Mode clair / sombre</button>
+<div>
+<h1>TCF ALGÉRIE PRO</h1>
+<small>Version 3.1 · Préparation aux examens</small>
+</div>
+<button class="secondary" onclick="toggleTheme()">
+Mode clair / sombre
+</button>
 </header>
+
 <main>
 <nav>
- <button onclick="showPage('home')">Accueil</button>
- <button onclick="showPage('exam')">Entraînement</button>
- <button onclick="showPage('writing')">Écrit</button>
- <button onclick="showPage('speaking')">Oral</button>
- <button onclick="showPage('progress')">Progression</button>
- <button onclick="showPage('premium')">Premium</button>
+<button onclick="showPage('home')">Accueil</button>
+<button onclick="showPage('exam')">Entraînement</button>
+<button onclick="showPage('writing')">Écrit</button>
+<button onclick="showPage('speaking')">Oral</button>
+<button onclick="showPage('progress')">Progression</button>
+<button onclick="showPage('premium')">Premium</button>
 </nav>
 
 <section id="home">
- <div class="card">
-  <h2>Bienvenue dans votre espace de préparation</h2>
-  <p>Entraînez-vous, révisez vos erreurs et suivez votre progression.</p>
-  <button onclick="showPage('exam')">Commencer un entraînement</button>
- </div>
- <div class="grid">
-  <div class="stat"><strong id="total">0</strong>Questions répondues</div>
-  <div class="stat"><strong id="success">0%</strong>Réussite</div>
-  <div class="stat"><strong id="sessions">0</strong>Séances</div>
- </div>
- <div class="card"><h2>Les quatre compétences</h2><div class="grid">
-  <div class="stat">Compréhension orale</div><div class="stat">Compréhension écrite</div>
-  <div class="stat">Expression orale</div><div class="stat">Expression écrite</div>
- </div></div>
- <div class="card"><h2>Nouveautés V3.1</h2><p>Questions mélangées, mémorisation des questions déjà vues sur cet appareil, mode examen chronométré et bilan détaillé.</p></div>
+<div class="card">
+<h2>Bienvenue dans votre espace de préparation</h2>
+<p>Entraînez-vous, révisez vos erreurs et suivez votre progression.</p>
+<button onclick="showPage('exam')">Commencer un entraînement</button>
+</div>
+
+<div class="grid">
+<div class="stat"><strong id="total">0</strong>Questions répondues</div>
+<div class="stat"><strong id="success">0%</strong>Réussite</div>
+<div class="stat"><strong id="sessions">0</strong>Séances</div>
+</div>
+
+<div class="card">
+<h2>Les quatre compétences</h2>
+<div class="grid">
+<div class="stat">Compréhension orale</div>
+<div class="stat">Compréhension écrite</div>
+<div class="stat">Expression orale</div>
+<div class="stat">Expression écrite</div>
+</div>
+</div>
+
+<div class="card">
+<h2>Nouveautés V3.1</h2>
+<p>Questions mélangées, mémorisation des questions déjà vues, mode examen chronométré et bilan détaillé.</p>
+</div>
 </section>
 
 <section id="exam" class="hidden">
- <div class="card">
-  <h2>Entraînement TCF</h2>
-  <label for="level">Niveau</label>
-  <select id="level"><option>B1</option><option>B2</option><option>C1</option></select>
-  <label for="skill">Compétence</label>
-  <select id="skill"><option value="CE">Compréhension écrite</option><option value="CO">Compréhension orale – entraînement écrit</option></select>
-  <label for="mode">Mode</label>
-  <select id="mode"><option value="practice">Entraînement avec correction immédiate</option><option value="exam">Mode examen – correction à la fin</option></select>
-  <label for="count">Nombre de questions</label>
-  <select id="count"><option value="5">5 questions</option><option value="10" selected>10 questions</option><option value="15">15 questions</option></select>
-  <p class="notice muted">La partie CO de cette version utilise des situations écrites : elle ne contient pas encore d'enregistrements audio.</p>
-  <button onclick="startQuiz()">Démarrer</button>
- </div>
- <div id="quiz" class="card hidden">
-  <div class="row"><span class="tag" id="quizMode">Entraînement</span><span class="tag" id="quizTimer">Temps : --:--</span></div>
-  <p class="muted" id="questionNumber"></p>
-  <div class="progressbar"><span id="quizProgress"></span></div>
-  <h3 id="question"></h3><div id="answers"></div>
-  <div id="feedback" class="hidden"></div>
-  <div class="row"><button id="next" onclick="nextQuestion()" class="hidden">Question suivante</button><button id="finish" onclick="finishQuiz()" class="secondary hidden">Terminer le test</button></div>
- </div>
- <div id="result" class="card hidden">
-  <h2>Résultat de la séance</h2><div class="grid">
-   <div class="stat"><strong id="resultScore">0/0</strong>Bonnes réponses</div>
-   <div class="stat"><strong id="resultRate">0%</strong>Réussite</div>
-   <div class="stat"><strong id="resultTime">--:--</strong>Durée</div>
-  </div><div id="review"></div>
-  <button onclick="startQuiz()">Recommencer avec de nouvelles questions</button>
- </div>
+<div class="card">
+<h2>Entraînement TCF</h2>
+
+<label for="level">Niveau</label>
+<select id="level">
+<option>B1</option>
+<option>B2</option>
+<option>C1</option>
+</select>
+
+<label for="skill">Compétence</label>
+<select id="skill">
+<option value="CE">Compréhension écrite</option>
+<option value="CO">Compréhension orale – entraînement écrit</option>
+</select>
+
+<label for="mode">Mode</label>
+<select id="mode">
+<option value="practice">Entraînement avec correction immédiate</option>
+<option value="exam">Mode examen – correction à la fin</option>
+</select>
+
+<label for="count">Nombre de questions</label>
+<select id="count">
+<option value="5">5 questions</option>
+<option value="10" selected>10 questions</option>
+<option value="15">15 questions</option>
+</select>
+
+<p class="notice muted">
+La partie CO utilise des situations écrites. Les enregistrements audio ne sont pas encore intégrés.
+</p>
+
+<button onclick="startQuiz()">Démarrer</button>
+</div>
+
+<div id="quiz" class="card hidden">
+<div class="row">
+<span class="tag" id="quizMode">Entraînement</span>
+<span class="tag" id="quizTimer">Temps : --:--</span>
+</div>
+<p class="muted" id="questionNumber"></p>
+<div class="progressbar"><span id="quizProgress"></span></div>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<div id="feedback" class="hidden"></div>
+<div class="row">
+<button id="next" onclick="nextQuestion()" class="hidden">Question suivante</button>
+<button id="finish" onclick="finishQuiz()" class="secondary hidden">Terminer le test</button>
+</div>
+</div>
+
+<div id="result" class="card hidden">
+<h2>Résultat de la séance</h2>
+<div class="grid">
+<div class="stat"><strong id="resultScore">0/0</strong>Bonnes réponses</div>
+<div class="stat"><strong id="resultRate">0%</strong>Réussite</div>
+<div class="stat"><strong id="resultTime">--:--</strong>Durée</div>
+</div>
+<div id="review"></div>
+<button onclick="startQuiz()">Recommencer</button>
+</div>
 </section>
-
-<section id="writing" class="hidden"><div class="card">
- <h2>Atelier d'expression écrite</h2><p id="writingPrompt">Sujet : Vous souhaitez participer à une activité culturelle. Écrivez un message pour présenter votre choix et expliquer vos motivations.</p>
- <button class="secondary" onclick="newWriting()">Nouveau sujet</button>
- <textarea id="essay" placeholder="Commencez votre rédaction ici..." oninput="countWords()"></textarea>
- <p class="muted">Nombre de mots : <strong id="wordCount">0</strong></p>
- <button onclick="saveEssay()">Enregistrer ma rédaction</button><p id="savedMessage" class="muted"></p>
- </div></section>
-
-<section id="speaking" class="hidden"><div class="card">
- <h2>Atelier d'expression orale</h2><p id="oralPrompt">Présentez une activité que vous aimez pratiquer et expliquez pourquoi elle est importante pour vous.</p>
- <button class="secondary" onclick="newOral()">Nouveau sujet</button><h3 id="timer">02:00</h3>
- <button onclick="startTimer()">Démarrer le chronomètre</button> <button class="secondary" onclick="stopTimer()">Arrêter</button>
- </div></section>
-
-<section id="progress" class="hidden"><div class="card">
- <h2>Ma progression</h2><div class="grid">
-  <div class="stat"><strong id="pTotal">0</strong>Réponses</div><div class="stat"><strong id="pCorrect">0</strong>Bonnes réponses</div><div class="stat"><strong id="pRate">0%</strong>Réussite</div>
- </div><h3>Historique des séances</h3><div id="history" class="muted">Aucune séance pour le moment.</div>
- <button class="secondary" onclick="resetStats()">Réinitialiser les statistiques</button>
- </div></section>
-
-<section id="premium" class="hidden"><div class="card">
- <h2>Espace Premium – préparation intelligente</h2>
- <p>La version Premium est prévue pour proposer des exercices supplémentaires générés par intelligence artificielle, des parcours personnalisés et des corrections approfondies.</p>
- <p class="notice muted"><strong>Important :</strong> cette page présente les fonctions prévues. La génération par IA et le paiement ne sont pas encore connectés dans cette version. Aucun paiement ne doit être effectué depuis cette page.</p>
- <ul><li>Création de nouvelles questions selon le niveau.</li><li>Exercices adaptés aux erreurs de l'apprenant.</li><li>Explications et conseils personnalisés.</li></ul>
- </div></section>
-</main>
-<footer>TCF ALGÉRIE PRO V3.1 · Outil indépendant d'entraînement personnel</footer>
-
-<script> clearInterval(quizClock);document.getElementById("result").classList.add("hidden");
- const l=document.getElementById("level").value,s=document.getElementById("skill").value;
- const key=l+"_"+s,seen=getSeen(),pool=bank.filter(x=>x.l===l&&x.s===s);
- if(!pool.length){alert("Aucune question disponible pour ce choix.");return}
- let fresh=shuffle(pool.filter(x=>!(seen[key]||[]).includes(x.id)));
- if(fresh.length===0){fresh=shuffle(pool);document.getElementById("feedback").textContent="Toutes les questions de cette sélection ont déjà été vues. La série recommence avec un nouvel ordre.";document.getElementById("feedback").classList.remove("hidden")}
- const amount=Math.min(Number(document.getElementById("count").value),fresh.length);
- questions=fresh.slice(0,amount);index=0;correct=0;answered=false;quizMode=document.getElementById("mode").value;quizStartedAt=Date.now();
- document.getElementById("quiz").classList.remove("hidden");document.getElementById("quizMode").textContent=quizMode==="exam"?"Mode examen":"Entraînement";
- document.getElementById("next").classList.add("hidden");document.getElementById("finish").classList.add("hidden");
- if(quizMode==="exam"){remaining=questions.length*90;updateQuizClock();quizClock=setInterval(()=>{remaining--;updateQuizClock();if(remaining<=0)finishQuiz(true)},1000)}
- else document.getElementById("quizTimer").textContent="Sans chronomètre";
- showQuestion();
-}
-function updateQuizClock(){document.getElementById("quizTimer").textContent="Temps : "+formatTime(remaining)}
-function formatTime(sec){return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
-function showQuestion(){
- answered=false;selectedChoice=null;const q=questions[index];
- document.getElementById("questionNumber").textContent=`Question ${index+1} sur ${questions.length} · Niveau ${q.l}`;
- document.getElementById("quizProgress").style.width=(index/questions.length*100)+"%";
- document.getElementById("question").textContent=q.q;document.getElementById("answers").innerHTML="";
- document.getElementById("feedback").classList.add("hidden");document.getElementById("next").classList.add("hidden");
- document.getElementById("finish").classList.toggle("hidden",quizMode!=="exam");
- q.a.forEach((a,i)=>{const b=document.createElement("button");b.className="option";b.textContent=(i+1)+". "+a;b.onclick=()=>checkAnswer(i);document.getElementById("answers").appendChild(b)});
-}
-function checkAnswer(choice){
- if(answered)return;answered=true;selectedChoice=choice;const q=questions[index];
- const buttons=document.querySelectorAll("#answers button");
- buttons.forEach((b,i)=>{b.disabled=true;if(quizMode==="practice"&&i===q.c)b.style.border="2px solid var(--good)";if(i===choice)b.classList.add("selected")});
- if(quizMode==="practice"){
-  const fb=document.getElementById("feedback");fb.classList.remove("hidden");
-  if(choice===q.c){correct++;fb.textContent="Bonne réponse ! "+q.e;fb.style.borderLeft="4px solid var(--good)"}
-  else{fb.textContent="Réponse incorrecte. "+q.e;fb.style.borderLeft="4px solid var(--bad)"}
- }else{if(choice===q.c)correct++;document.getElementById("feedback").classList.remove("hidden");document.getElementById("feedback").textContent="Réponse enregistrée. La correction sera affichée à la fin."}
- document.getElementById("next").classList.remove("hidden");document.getElementById("next").textContent=index===questions.length-1?"Voir mon résultat":"Question suivante";
-}
-function nextQuestion(){if(!answered)return;index++;if(index<questions.length){showQuestion();return}finishQuiz()}
-function finishQuiz(timeUp=false){
- if(!questions.length)return;clearInterval(quizClock);quizClock=null;
- const answeredCount=questions.filter((q,i)=>document.querySelectorAll("#answers button").length&&i<index).length;
- // En mode examen, une question non répondue n'est pas comptée comme juste.
- const elapsed=Math.max(0,Math.round((Date.now()-quizStartedAt)/1000));
- total+=questions.length;good+=correct;sessions++;
- localStorage.setItem("tcfTotal",total);localStorage.setItem("tcfGood",good);localStorage.setItem("tcfSessions",sessions);
- const key=questions[0].l+"_"+questions[0].s,seen=getSeen();seen[key]=Array.from(new Set([...(seen[key]||[]),...questions.map(q=>q.id)]));localStorage.setItem("tcfSeen",JSON.stringify(seen));
- const rate=Math.round(correct/questions.length*100),entry=`Séance ${sessions} : ${correct}/${questions.length} (${rate} %) – ${questions[0].l} ${questions[0].s}`;
- let hist=JSON.parse(localStorage.getItem("tcfHistory")||"[]");hist.unshift(entry);localStorage.setItem("tcfHistory",JSON.stringify(hist.slice(0,15)));
- document.getElementById("quiz").classList.add("hidden");document.getElementById("result").classList.remove("hidden");
- document.getElementById("resultScore").textContent=correct+"/"+questions.length;document.getElementById("resultRate").textContent=rate+"%";document.getElementById("resultTime").textContent=formatTime(elapsed);
- const review=document.getElementById("review");review.innerHTML="<h3>Correction détaillée</h3>"+(timeUp?'<p class="notice">Temps écoulé : le test a été terminé automatiquement.</p>':"");
- questions.forEach((q,i)=>{const chosen=(q._choice===undefined)?null:q._choice;});
- // Les choix sont conservés séparément pendant la séance.
- const choices=window.quizChoices||[];
- questions.forEach((q,i)=>{const chosen=choices[i];const p=document.createElement("p");p.className="notice";p.innerHTML="<strong>"+(i+1)+". "+escapeHtml(q.q)+"</strong><br>"+(chosen===undefined||chosen===null?"Aucune réponse.":(chosen===q.c?"Bonne réponse : ":"Votre réponse : ")+escapeHtml(q.a[chosen]))+"<br><span class='muted'>Réponse correcte : "+escapeHtml(q.a[q.c])+". "+escapeHtml(q.e)+"</span>";review.appendChild(p)});
- window.quizChoices=[];updateStats();
-}
-window.quizChoices=[];
-const originalCheckAnswer=checkAnswer;
-checkAnswer=function(choice){window.quizChoices[index]=choice;originalCheckAnswer(choice)};
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function updateStats(){
- const rate=total?Math.round(good/total*100):0;
- ["total","pTotal"].forEach(id=>document.getElementById(id).textContent=total);
- document.getElementById("success").textContent=rate+"%";document.getElementById("sessions").textContent=sessions;
- document.getElementById("pCorrect").textContent=good;document.getElementById("pRate").textContent=rate+"%";
- const h=JSON.parse(localStorage.getItem("tcfHistory")||"[]");const box=document.getElementById("history");
- box.innerHTML="";if(!h.length)box.textContent="Aucune séance pour le moment.";else h.forEach(x=>{const p=document.createElement("p");p.textContent=x;box.appendChild(p)});
-}
-function resetStats(){if(!confirm("Effacer les statistiques et l'historique enregistrés ?"))return;total=0;good=0;sessions=0;["tcfTotal","tcfGood","tcfSessions","tcfHistory","tcfSeen"].forEach(k=>localStorage.removeItem(k));updateStats()}const writingTopics=["Vous avez participé à une activité culturelle. Écrivez à un ami pour raconter cette expérience.","Vous souhaitez convaincre votre commune d'aménager un espace vert. Rédigez un message argumenté.","Un ami souhaite apprendre une langue étrangère. Donnez-lui des conseils et expliquez les avantages.","Vous avez découvert une nouvelle ville. Racontez votre visite et partagez vos impressions.","Votre quartier organise une journée de nettoyage. Écrivez un message pour encourager les habitants à participer.","Vous avez suivi une formation intéressante. Présentez-la et expliquez ce qu'elle vous a apporté."];
-
-const oralTopics=["Présentez une activité que vous aimez pratiquer et expliquez pourquoi.","Les réseaux sociaux rapprochent-ils vraiment les personnes ? Donnez votre avis.","Parlez d'un voyage qui vous a marqué et expliquez ce que vous avez appris.","Faut-il privilégier les transports publics ? Présentez vos arguments.","Le travail à distance améliore-t-il la qualité de vie ? Justifiez votre opinion.","La lecture est-elle toujours importante à l'ère du numérique ? Argumentez."];
-
-function newWriting(){document.getElementById("writingPrompt").textContent="Sujet : "+writingTopics[Math.floor(Math.random()*writingTopics.length)]}
-function countWords(){const t=document.getElementById("essay").value.trim();document.getElementById("wordCount").textContent=t?t.split(/\s+/).length:0}
-document.getElementById("essay").value=localStorage.getItem("tcfEssay")||"";
-countWords();
-
-function saveEssay(){localStorage.setItem("tcfEssay",document.getElementById("essay").value);document.getElementById("savedMessage").textContent="Rédaction enregistrée sur cet appareil."}
-function newOral(){document.getElementById("oralPrompt").textContent=oralTopics[Math.floor(Math.random()*oralTopics.length)]}
-function displayTimer(){document.getElementById("timer").textContent=formatTime(seconds)}
-function startTimer(){if(timerInterval)return;if(seconds<=0)seconds=120;timerInterval=setInterval(()=>{seconds--;displayTimer();if(seconds<=0)stopTimer()},1000)}
-function stopTimer(){clearInterval(timerInterval);timerInterval=null}
-updateStats();
-</script>
-</body>
-</html>
