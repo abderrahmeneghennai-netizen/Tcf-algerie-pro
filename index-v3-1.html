@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#081426">
 <title>TCF ALGÉRIE PRO V3.1</title>
+
 <style>
 :root {
 --bg:#081426;
@@ -30,7 +31,7 @@ margin:0;
 background:var(--bg);
 color:var(--text);
 font-family:Arial,sans-serif;
-line-height:1.5;
+line-height:1.6;
 }
 header {
 padding:18px;
@@ -44,7 +45,7 @@ flex-wrap:wrap;
 }
 h1 {font-size:21px;margin:0;color:var(--gold)}
 header small {color:var(--muted)}
-button,select,textarea,input {font:inherit}
+button,input,select,textarea {font:inherit}
 button {
 border:0;
 border-radius:9px;
@@ -54,7 +55,7 @@ color:#17243a;
 font-weight:bold;
 cursor:pointer;
 }
-button:disabled {opacity:.55}
+button:disabled {opacity:.5;cursor:not-allowed}
 button.secondary {
 background:var(--panel);
 color:var(--text);
@@ -67,7 +68,7 @@ gap:8px;
 flex-wrap:wrap;
 margin-bottom:18px;
 }
-nav button {flex:1;min-width:100px}
+nav button {flex:1;min-width:90px}
 .card {
 background:var(--panel);
 border:1px solid var(--line);
@@ -148,18 +149,23 @@ width:0;
 background:var(--gold);
 transition:width .2s;
 }
-footer {
-text-align:center;
-color:var(--muted);
-padding:25px;
-font-size:12px;
-}
 .tag {
 display:inline-block;
 padding:3px 8px;
 border:1px solid var(--line);
 border-radius:20px;
 color:var(--muted);
+font-size:12px;
+}
+.price {
+font-size:25px;
+font-weight:bold;
+color:var(--gold);
+}
+footer {
+text-align:center;
+color:var(--muted);
+padding:25px;
 font-size:12px;
 }
 @media(max-width:520px) {
@@ -170,6 +176,7 @@ nav button {min-width:85px;padding:10px 8px}
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -183,6 +190,7 @@ Mode clair / sombre
 </header>
 
 <main>
+
 <nav>
 <button onclick="showPage('home')">Accueil</button>
 <button onclick="showPage('exam')">Entraînement</button>
@@ -192,10 +200,12 @@ Mode clair / sombre
 <button onclick="showPage('premium')">Premium</button>
 </nav>
 
+<!-- ACCUEIL -->
+
 <section id="home">
 <div class="card">
 <h2>Bienvenue dans votre espace de préparation</h2>
-<p>Entraînez-vous, révisez vos erreurs et suivez votre progression.</p>
+<p>Préparez votre TCF, améliorez vos compétences et suivez votre progression.</p>
 <button onclick="showPage('exam')">Commencer un entraînement</button>
 </div>
 
@@ -217,9 +227,18 @@ Mode clair / sombre
 
 <div class="card">
 <h2>Nouveautés V3.1</h2>
-<p>Questions mélangées, mémorisation des questions déjà vues, mode examen chronométré et bilan détaillé.</p>
+<ul>
+<li>Questions mélangées.</li>
+<li>Mémorisation des questions déjà vues.</li>
+<li>Mode examen chronométré.</li>
+<li>Correction détaillée.</li>
+<li>Atelier d'expression orale.</li>
+<li>Suivi des résultats.</li>
+</ul>
 </div>
 </section>
+
+<!-- ENTRAINEMENT -->
 
 <section id="exam" class="hidden">
 <div class="card">
@@ -252,7 +271,7 @@ Mode clair / sombre
 </select>
 
 <p class="notice muted">
-La partie CO utilise des situations écrites. Les enregistrements audio ne sont pas encore intégrés.
+La partie CO utilise actuellement des situations écrites. Les véritables audios ne sont pas encore intégrés.
 </p>
 
 <button onclick="startQuiz()">Démarrer</button>
@@ -263,11 +282,14 @@ La partie CO utilise des situations écrites. Les enregistrements audio ne sont 
 <span class="tag" id="quizMode">Entraînement</span>
 <span class="tag" id="quizTimer">Temps : --:--</span>
 </div>
+
 <p class="muted" id="questionNumber"></p>
 <div class="progressbar"><span id="quizProgress"></span></div>
+
 <h3 id="question"></h3>
 <div id="answers"></div>
 <div id="feedback" class="hidden"></div>
+
 <div class="row">
 <button id="next" onclick="nextQuestion()" class="hidden">Question suivante</button>
 <button id="finish" onclick="finishQuiz()" class="secondary hidden">Terminer le test</button>
@@ -276,66 +298,142 @@ La partie CO utilise des situations écrites. Les enregistrements audio ne sont 
 
 <div id="result" class="card hidden">
 <h2>Résultat de la séance</h2>
+
 <div class="grid">
 <div class="stat"><strong id="resultScore">0/0</strong>Bonnes réponses</div>
 <div class="stat"><strong id="resultRate">0%</strong>Réussite</div>
 <div class="stat"><strong id="resultTime">--:--</strong>Durée</div>
 </div>
+
 <div id="review"></div>
 <button onclick="startQuiz()">Recommencer</button>
 </div>
 </section>
+
+<!-- EXPRESSION ECRITE -->
+
 <section id="writing" class="hidden">
 <div class="card">
 <h2>Atelier d'expression écrite</h2>
-<p id="writingPrompt">Sujet : Vous souhaitez participer à une activité culturelle. Écrivez un message pour présenter votre choix et expliquer vos motivations.</p>
+
+<p id="writingPrompt">
+Sujet : Vous souhaitez participer à une activité culturelle.
+Écrivez un message pour présenter votre choix et expliquer vos motivations.
+</p>
+
 <button class="secondary" onclick="newWriting()">Nouveau sujet</button>
-<textarea id="essay" placeholder="Commencez votre rédaction ici..." oninput="countWords()"></textarea>
-<p class="muted">Nombre de mots : <strong id="wordCount">0</strong></p>
+
+<textarea id="essay" placeholder="Commencez votre rédaction ici..."></textarea>
+
+<p class="muted">
+Nombre de mots : <strong id="wordCount">0</strong>
+</p>
+
 <button onclick="saveEssay()">Enregistrer ma rédaction</button>
 <p id="savedMessage" class="muted"></p>
 </div>
 </section>
 
+<!-- EXPRESSION ORALE -->
+
 <section id="speaking" class="hidden">
 <div class="card">
 <h2>Atelier d'expression orale</h2>
-<p id="oralPrompt">Présentez une activité que vous aimez pratiquer et expliquez pourquoi elle est importante pour vous.</p>
+
+<p id="oralPrompt">
+Présentez une activité que vous aimez pratiquer et expliquez pourquoi elle est importante pour vous.
+</p>
+
 <button class="secondary" onclick="newOral()">Nouveau sujet</button>
-<h3 id="timer">02:00</h3>
-<button onclick="startTimer()">Démarrer le chronomètre</button>
+
+<h3>Temps de préparation</h3>
+<h2 id="timer">02:00</h2>
+
+<div class="row">
+<button onclick="startTimer()">Démarrer</button>
 <button class="secondary" onclick="stopTimer()">Arrêter</button>
+<button class="secondary" onclick="resetTimer()">Réinitialiser</button>
+</div>
+</div>
+
+<div class="card">
+<h2>Enregistrement et transcription</h2>
+
+<p class="notice muted" id="micStatus">
+Prêt pour votre exercice oral.
+</p>
+
+<div class="row">
+<button id="micStart" onclick="startSpeaking()">🎤 Commencer à parler</button>
+<button id="micStop" class="secondary" onclick="stopSpeaking()" disabled>Arrêter</button>
+</div>
+
+<label for="transcript">Votre transcription</label>
+<textarea id="transcript" placeholder="Votre réponse apparaîtra ici..." readonly></textarea>
+
+<p class="muted">
+La transcription dépend de la compatibilité du navigateur et de sa prise en charge du français.
+</p>
+
+<audio id="audioPlayback" controls class="hidden"></audio>
 </div>
 </section>
+
+<!-- PROGRESSION -->
 
 <section id="progress" class="hidden">
 <div class="card">
 <h2>Ma progression</h2>
+
 <div class="grid">
 <div class="stat"><strong id="pTotal">0</strong>Réponses</div>
 <div class="stat"><strong id="pCorrect">0</strong>Bonnes réponses</div>
 <div class="stat"><strong id="pRate">0%</strong>Réussite</div>
 </div>
+
 <h3>Historique des séances</h3>
 <div id="history" class="muted">Aucune séance pour le moment.</div>
+
 <button class="secondary" onclick="resetStats()">Réinitialiser les statistiques</button>
 </div>
 </section>
 
+<!-- PREMIUM -->
+
 <section id="premium" class="hidden">
 <div class="card">
-<h2>Espace Premium – préparation intelligente</h2>
-<p>La version Premium est prévue pour proposer des exercices supplémentaires générés par intelligence artificielle, des parcours personnalisés et des corrections approfondies.</p>
-<p class="notice muted">
-<strong>Important :</strong> la génération par IA et le paiement ne sont pas encore connectés. Aucun paiement ne doit être effectué depuis cette page.
-</p>
+<h2>Espace Premium</h2>
+<p>Préparez votre examen avec des parcours d'entraînement supplémentaires.</p>
+
+<div class="grid">
+<div class="stat">
+<h3>Abonnement 1 mois</h3>
+<div class="price">700 DA</div>
+<p class="muted">Accès pendant un mois.</p>
+</div>
+
+<div class="stat">
+<h3>Abonnement 3 mois</h3>
+<div class="price">1 800 DA</div>
+<p class="muted">Accès pendant trois mois.</p>
+</div>
+</div>
+
+<h3>Fonctionnalités prévues</h3>
 <ul>
-<li>Création de nouvelles questions selon le niveau.</li>
-<li>Exercices adaptés aux erreurs de l'apprenant.</li>
-<li>Explications et conseils personnalisés.</li>
+<li>Questions supplémentaires.</li>
+<li>Exercices adaptés au niveau.</li>
+<li>Parcours personnalisés.</li>
+<li>Corrections approfondies.</li>
+<li>Entraînements supplémentaires.</li>
 </ul>
+
+<p class="notice muted">
+Les abonnements et le paiement ne sont pas encore connectés. Aucun paiement ne peut être effectué depuis cette page.
+</p>
 </div>
 </section>
+
 </main>
 
 <footer>
@@ -343,15 +441,20 @@ TCF ALGÉRIE PRO V3.1 · Outil indépendant d'entraînement personnel
 </footer>
 
 <script>
+
+// ===================================
+// CONFIGURATION GENERALE
+// ===================================
+
 let questions = [];
 let index = 0;
 let correct = 0;
 let answered = false;
-let selectedChoice = null;
 let quizMode = "practice";
 let quizStartedAt = 0;
 let quizClock = null;
 let remaining = 0;
+let quizFinished = false;
 
 let total = Number(localStorage.getItem("tcfTotal") || 0);
 let good = Number(localStorage.getItem("tcfGood") || 0);
@@ -360,15 +463,21 @@ let sessions = Number(localStorage.getItem("tcfSessions") || 0);
 let seconds = 120;
 let timerInterval = null;
 
+// ===================================
+// NAVIGATION
+// ===================================
+
 function showPage(id) {
 document.querySelectorAll("main section").forEach(section => {
 section.classList.add("hidden");
 });
+
 document.getElementById(id).classList.remove("hidden");
 }
 
 function toggleTheme() {
 document.body.classList.toggle("light");
+
 localStorage.setItem(
 "tcfTheme",
 document.body.classList.contains("light") ? "light" : "dark"
@@ -379,6 +488,10 @@ if (localStorage.getItem("tcfTheme") === "light") {
 document.body.classList.add("light");
 }
 
+// ===================================
+// BANQUE DE QUESTIONS
+// ===================================
+
 function shuffle(array) {
 return [...array].sort(() => Math.random() - 0.5);
 }
@@ -386,81 +499,262 @@ return [...array].sort(() => Math.random() - 0.5);
 function getSeen() {
 try {
 return JSON.parse(localStorage.getItem("tcfSeen") || "{}");
-} catch {
+} catch(error) {
 return {};
 }
-
 }
 
 const bank = [
-{l:"B1",s:"CE",id:"b1ce1",q:"Vous lisez : « La bibliothèque sera fermée lundi pour travaux. » Que doit comprendre le lecteur ?",a:["Elle ouvre plus tôt.","Elle ne sera pas accessible lundi.","Elle change définitivement d'adresse.","Elle propose une activité."],c:1,e:"L'annonce indique une fermeture temporaire lundi."},
-{l:"B1",s:"CE",id:"b1ce2",q:"« Merci de confirmer votre présence avant vendredi. » Que devez-vous faire ?",a:["Annuler votre visite.","Téléphoner samedi.","Confirmer avant vendredi.","Envoyer un document lundi."],c:2,e:"Il faut confirmer sa présence avant la date indiquée."},
-{l:"B1",s:"CE",id:"b1ce3",q:"Un magasin annonce : « Livraison gratuite dès 5 000 DA d'achat. » Que signifie cette annonce ?",a:["Tous les produits sont gratuits.","La livraison est offerte à partir de ce montant.","Le magasin ferme à 5 000 DA.","Le paiement est obligatoire en espèces."],c:1,e:"La livraison est gratuite lorsque l'achat atteint le seuil annoncé."},
-{l:"B1",s:"CE",id:"b1ce4",q:"« Le cours prévu mardi est reporté à jeudi. » Quand aura lieu le cours ?",a:["Lundi","Mardi","Mercredi","Jeudi"],c:3,e:"Le cours est déplacé de mardi à jeudi."},
-{l:"B1",s:"CE",id:"b1ce5",q:"Une affiche indique : « Entrée réservée aux personnes inscrites. » Qui peut entrer ?",a:["Tout le monde","Les personnes inscrites","Les visiteurs sans invitation","Les employés uniquement"],c:1,e:"L'accès est limité aux personnes inscrites."},
-{l:"B1",s:"CO",id:"b1co1",q:"Vous entendez dans une gare : « Le train à destination d'Oran partira avec vingt minutes de retard. » Que se passe-t-il ?",a:["Le train est supprimé.","Le train part en avance.","Le train part plus tard que prévu.","Le train change de destination."],c:2,e:"Le départ est retardé de vingt minutes."},
-{l:"B1",s:"CO",id:"b1co2",q:"Une personne dit : « Je préfère prendre le bus, car le stationnement en ville est difficile. » Pourquoi choisit-elle le bus ?",a:["Il est plus rapide dans tous les cas.","Elle ne trouve pas facilement de place pour sa voiture.","Elle n'aime pas marcher.","Le bus est gratuit."],c:1,e:"La difficulté de stationnement motive son choix."},
-{l:"B1",s:"CO",id:"b1co3",q:"Vous entendez : « N'oubliez pas votre carte d'étudiant pour bénéficier de la réduction. » Que faut-il présenter ?",a:["Un passeport","Une carte bancaire","Une carte d'étudiant","Un billet de train"],c:2,e:"La réduction nécessite la carte d'étudiant."},
-{l:"B1",s:"CO",id:"b1co4",q:"Une collègue dit : « Je ne pourrai pas venir ce matin, j'ai un rendez-vous médical. » Pourquoi sera-t-elle absente ?",a:["Elle est en vacances.","Elle a un rendez-vous médical.","Elle a oublié l'adresse.","Elle travaille à distance."],c:1,e:"Elle explique son absence par un rendez-vous médical."},
-{l:"B1",s:"CO",id:"b1co5",q:"Un message annonce : « La réunion commencera dès que le directeur arrivera. » Quand commencera-t-elle ?",a:["À une heure fixe.","Après l'arrivée du directeur.","Le lendemain.","Avant l'ouverture."],c:1,e:"Le début dépend de l'arrivée du directeur."},
 
-{l:"B2",s:"CE",id:"b2ce1",q:"Un article affirme que le télétravail réduit les déplacements, mais peut aussi isoler certains salariés. Quelle idée est défendue ?",a:["Le télétravail présente uniquement des avantages.","Le télétravail doit être interdit.","Le télétravail comporte des bénéfices et des limites.","Les déplacements sont toujours nécessaires."],c:2,e:"Le texte présente deux aspects du télétravail."},
-{l:"B2",s:"CE",id:"b2ce2",q:"« La municipalité entend renforcer les espaces verts afin d'améliorer le cadre de vie. » Quel est l'objectif ?",a:["Réduire les transports.","Améliorer l'environnement urbain.","Augmenter les constructions.","Limiter les activités culturelles."],c:1,e:"Les espaces verts visent à rendre la vie en ville plus agréable."},
-{l:"B2",s:"CE",id:"b2ce3",q:"Un rapport souligne que les résultats d'une réforme restent difficiles à évaluer faute de données suffisantes. Quelle est la réserve principale ?",a:["La réforme est abandonnée.","Les données manquent pour mesurer les effets.","Les résultats sont excellents.","Le coût est déjà connu."],c:1,e:"L'absence de données empêche une évaluation fiable."},
-{l:"B2",s:"CE",id:"b2ce4",q:"« Bien que cette mesure soit coûteuse, elle pourrait réduire les inégalités à long terme. » Quelle relation exprime « bien que » ?",a:["La cause","La conséquence","L'opposition","Le but"],c:2,e:"« Bien que » introduit une concession."},
-{l:"B2",s:"CE",id:"b2ce5",q:"Un auteur écrit que la lecture numérique facilite l'accès aux ouvrages, sans remplacer nécessairement le plaisir du livre papier. Quelle position adopte-t-il ?",a:["Il rejette toute technologie.","Il oppose totalement les deux supports.","Il reconnaît les avantages du numérique tout en nuançant son avis.","Il affirme que le papier a disparu."],c:2,e:"L'auteur adopte une position nuancée."},
-{l:"B2",s:"CO",id:"b2co1",q:"Un responsable annonce que le projet sera maintenu, à condition que son financement soit assuré. Que faut-il comprendre ?",a:["Le projet est définitivement abandonné.","Le projet dépend de son financement.","Le projet est déjà terminé.","Le financement est inutile."],c:1,e:"La réalisation du projet dépend de l'obtention du financement."},
-{l:"B2",s:"CO",id:"b2co2",q:"Une intervenante déclare : « Je ne conteste pas l'utilité de cette réforme, mais sa mise en œuvre me semble précipitée. » Que critique-t-elle ?",a:["L'objectif de la réforme.","Son principe même.","La rapidité de son application.","Le manque d'intérêt du public."],c:2,e:"Elle critique la mise en œuvre trop rapide."},
-{l:"B2",s:"CO",id:"b2co3",q:"Un voyageur précise : « Le trajet est certes plus long, néanmoins le train reste plus confortable. » Quel avantage souligne-t-il ?",a:["Le prix le plus bas.","Le confort du train.","La rapidité du trajet.","La possibilité de conduire."],c:1,e:"Il met en avant le confort malgré la durée."},
-{l:"B2",s:"CO",id:"b2co4",q:"Un directeur affirme : « Nous reporterons la décision jusqu'à ce que les experts aient rendu leur avis. » Que va-t-il faire ?",a:["Décider immédiatement.","Attendre l'avis des experts.","Annuler la consultation.","Changer les experts."],c:1,e:"La décision sera prise après la consultation des experts."},
-{l:"B2",s:"CO",id:"b2co5",q:"Une journaliste explique que les habitants soutiennent le projet, pourvu que les nuisances sonores soient limitées. Quelle est leur condition ?",a:["Une hausse des prix.","Une réduction du bruit.","Une fermeture des commerces.","Une modification des horaires scolaires."],c:1,e:"Le soutien dépend de la limitation du bruit."},
+{
+l:"B1",s:"CE",id:"b1ce1",
+q:"Vous lisez : « La bibliothèque sera fermée lundi pour travaux. » Que doit comprendre le lecteur ?",
+a:["Elle ouvre plus tôt.","Elle ne sera pas accessible lundi.","Elle change définitivement d'adresse.","Elle propose une activité."],
+c:1,e:"L'annonce indique une fermeture temporaire lundi."
+},
+{
+l:"B1",s:"CE",id:"b1ce2",
+q:"« Merci de confirmer votre présence avant vendredi. » Que devez-vous faire ?",
+a:["Annuler votre visite.","Téléphoner samedi.","Confirmer avant vendredi.","Envoyer un document lundi."],
+c:2,e:"Il faut confirmer sa présence avant la date indiquée."
+},
+{
+l:"B1",s:"CE",id:"b1ce3",
+q:"Un magasin annonce : « Livraison gratuite dès 5 000 DA d'achat. » Que signifie cette annonce ?",
+a:["Tous les produits sont gratuits.","La livraison est offerte à partir de ce montant.","Le magasin ferme à 5 000 DA.","Le paiement est obligatoire en espèces."],
+c:1,e:"La livraison est gratuite lorsque l'achat atteint le seuil annoncé."
+},
+{
+l:"B1",s:"CE",id:"b1ce4",
+q:"« Le cours prévu mardi est reporté à jeudi. » Quand aura lieu le cours ?",
+a:["Lundi","Mardi","Mercredi","Jeudi"],
+c:3,e:"Le cours est déplacé de mardi à jeudi."
+},
+{
+l:"B1",s:"CE",id:"b1ce5",
+q:"Une affiche indique : « Entrée réservée aux personnes inscrites. » Qui peut entrer ?",
+a:["Tout le monde","Les personnes inscrites","Les visiteurs sans invitation","Les employés uniquement"],
+c:1,e:"L'accès est limité aux personnes inscrites."
+},
 
-{l:"C1",s:"CE",id:"c1ce1",q:"« La multiplication des indicateurs ne garantit nullement une meilleure compréhension d'un phénomène. » Quelle idée exprime cette phrase ?",a:["Les indicateurs sont toujours inutiles.","Une quantité importante de données ne suffit pas à comprendre.","Les phénomènes sont simples à expliquer.","Il faut supprimer toute mesure."],c:1,e:"La quantité d'indicateurs ne garantit pas la qualité de l'analyse."},
-{l:"C1",s:"CE",id:"c1ce2",q:"Un essai soutient qu'une innovation ne devient socialement bénéfique que si ses usages sont encadrés. Quelle condition est essentielle ?",a:["Sa diffusion immédiate.","Son financement exclusif.","L'existence d'un cadre d'utilisation.","La suppression des débats."],c:2,e:"L'auteur insiste sur la nécessité d'encadrer les usages."},
-{l:"C1",s:"CE",id:"c1ce3",q:"« Cette hypothèse, séduisante à première vue, ne résiste guère à l'examen des faits. » Que suggère l'auteur ?",a:["L'hypothèse est confirmée.","L'hypothèse paraît convaincante mais manque de solidité.","Les faits sont inutiles.","L'analyse est impossible."],c:1,e:"L'expression indique que l'hypothèse est finalement peu convaincante."},
-{l:"C1",s:"CE",id:"c1ce4",q:"Un texte affirme que la mémoire collective se construit autant par les silences que par les récits transmis. Quelle idée faut-il retenir ?",a:["Seuls les récits officiels comptent.","Les oublis et les silences influencent aussi la mémoire collective.","La mémoire est identique pour tous.","Les témoignages n'ont aucune valeur."],c:1,e:"Le texte souligne le rôle des silences dans la construction de la mémoire."},
-{l:"C1",s:"CE",id:"c1ce5",q:"« Loin de constituer une réponse définitive, cette étude ouvre de nouvelles pistes de réflexion. » Quelle est la fonction de l'étude ?",a:["Clore le débat.","Fournir une certitude absolue.","Encourager de nouvelles recherches.","Écarter toute discussion."],c:2,e:"L'étude ouvre des pistes au lieu de conclure définitivement."},
-{l:"C1",s:"CO",id:"c1co1",q:"Un expert explique que la mesure ne saurait être efficace sans une coordination entre les différents acteurs. Quelle est son idée principale ?",a:["Chaque acteur doit agir isolément.","La coordination est indispensable à l'efficacité.","La mesure est inutile.","Un seul acteur doit décider."],c:1,e:"L'expert insiste sur la coordination des acteurs."},
-{l:"C1",s:"CO",id:"c1co2",q:"Une chercheuse précise : « Ce résultat, pour intéressant qu'il soit, doit être interprété avec prudence. » Quelle attitude recommande-t-elle ?",a:["Le rejeter sans examen.","Le généraliser immédiatement.","Éviter les conclusions trop rapides.","L'ignorer définitivement."],c:2,e:"Elle invite à une interprétation prudente."},
-{l:"C1",s:"CO",id:"c1co3",q:"Un responsable affirme que la réforme n'aura de portée réelle qu'à la condition d'être accompagnée d'une formation adaptée. Que souligne-t-il ?",a:["La formation est secondaire.","La réforme exige une formation adaptée.","La réforme doit être supprimée.","Les compétences sont déjà suffisantes."],c:1,e:"La formation est une condition de réussite de la réforme."},
-{l:"C1",s:"CO",id:"c1co4",q:"Une intervenante dit : « Il serait hasardeux d'attribuer cette évolution à une cause unique. » Que veut-elle dire ?",a:["Une seule cause est certaine.","Plusieurs facteurs peuvent expliquer l'évolution.","Aucune explication n'existe.","L'évolution est imaginaire."],c:1,e:"Elle met en garde contre une explication trop simpliste."},
-{l:"C1",s:"CO",id:"c1co5",q:"Un spécialiste affirme que les résultats sont encourageants, sans pour autant autoriser un optimisme excessif. Quelle est sa position ?",a:["Un optimisme mesuré.","Un pessimisme absolu.","Une certitude définitive.","Un rejet des résultats."],c:0,e:"Il reconnaît les résultats positifs tout en restant prudent."}
+{
+l:"B1",s:"CO",id:"b1co1",
+q:"Vous entendez dans une gare : « Le train à destination d'Oran partira avec vingt minutes de retard. » Que se passe-t-il ?",
+a:["Le train est supprimé.","Le train part en avance.","Le train part plus tard que prévu.","Le train change de destination."],
+c:2,e:"Le départ est retardé de vingt minutes."
+},
+{
+l:"B1",s:"CO",id:"b1co2",
+q:"Une personne dit : « Je préfère prendre le bus, car le stationnement en ville est difficile. » Pourquoi choisit-elle le bus ?",
+a:["Il est plus rapide dans tous les cas.","Elle ne trouve pas facilement de place pour sa voiture.","Elle n'aime pas marcher.","Le bus est gratuit."],
+c:1,e:"La difficulté de stationnement motive son choix."
+},
+{
+l:"B1",s:"CO",id:"b1co3",
+q:"Vous entendez : « N'oubliez pas votre carte d'étudiant pour bénéficier de la réduction. » Que faut-il présenter ?",
+a:["Un passeport","Une carte bancaire","Une carte d'étudiant","Un billet de train"],
+c:2,e:"La réduction nécessite la carte d'étudiant."
+},
+{
+l:"B1",s:"CO",id:"b1co4",
+q:"Une collègue dit : « Je ne pourrai pas venir ce matin, j'ai un rendez-vous médical. » Pourquoi sera-t-elle absente ?",
+a:["Elle est en vacances.","Elle a un rendez-vous médical.","Elle a oublié l'adresse.","Elle travaille à distance."],
+c:1,e:"Elle explique son absence par un rendez-vous médical."
+},
+{
+l:"B1",s:"CO",id:"b1co5",
+q:"Un message annonce : « La réunion commencera dès que le directeur arrivera. » Quand commencera-t-elle ?",
+a:["À une heure fixe.","Après l'arrivée du directeur.","Le lendemain.","Avant l'ouverture."],
+c:1,e:"Le début dépend de l'arrivée du directeur."
+},
+
+{
+l:"B2",s:"CE",id:"b2ce1",
+q:"Un article affirme que le télétravail réduit les déplacements, mais peut aussi isoler certains salariés. Quelle idée est défendue ?",
+a:["Le télétravail présente uniquement des avantages.","Le télétravail doit être interdit.","Le télétravail comporte des bénéfices et des limites.","Les déplacements sont toujours nécessaires."],
+c:2,e:"Le texte présente deux aspects du télétravail."
+},
+{
+l:"B2",s:"CE",id:"b2ce2",
+q:"« La municipalité entend renforcer les espaces verts afin d'améliorer le cadre de vie. » Quel est l'objectif ?",
+a:["Réduire les transports.","Améliorer l'environnement urbain.","Augmenter les constructions.","Limiter les activités culturelles."],
+c:1,e:"Les espaces verts visent à rendre la vie en ville plus agréable."
+},
+{
+l:"B2",s:"CE",id:"b2ce3",
+q:"Un rapport souligne que les résultats d'une réforme restent difficiles à évaluer faute de données suffisantes. Quelle est la réserve principale ?",
+a:["La réforme est abandonnée.","Les données manquent pour mesurer les effets.","Les résultats sont excellents.","Le coût est déjà connu."],
+c:1,e:"L'absence de données empêche une évaluation fiable."
+},
+{
+l:"B2",s:"CE",id:"b2ce4",
+q:"« Bien que cette mesure soit coûteuse, elle pourrait réduire les inégalités à long terme. » Quelle relation exprime « bien que » ?",
+a:["La cause","La conséquence","L'opposition","Le but"],
+c:2,e:"« Bien que » introduit une concession."
+},
+{
+l:"B2",s:"CE",id:"b2ce5",
+q:"Un auteur écrit que la lecture numérique facilite l'accès aux ouvrages, sans remplacer nécessairement le plaisir du livre papier. Quelle position adopte-t-il ?",
+a:["Il rejette toute technologie.","Il oppose totalement les deux supports.","Il reconnaît les avantages du numérique tout en nuançant son avis.","Il affirme que le papier a disparu."],
+c:2,e:"L'auteur adopte une position nuancée."
+},
+
+{
+l:"B2",s:"CO",id:"b2co1",
+q:"Un responsable annonce que le projet sera maintenu, à condition que son financement soit assuré. Que faut-il comprendre ?",
+a:["Le projet est définitivement abandonné.","Le projet dépend de son financement.","Le projet est déjà terminé.","Le financement est inutile."],
+c:1,e:"La réalisation du projet dépend de l'obtention du financement."
+},
+{
+l:"B2",s:"CO",id:"b2co2",
+q:"Une intervenante déclare : « Je ne conteste pas l'utilité de cette réforme, mais sa mise en œuvre me semble précipitée. » Que critique-t-elle ?",
+a:["L'objectif de la réforme.","Son principe même.","La rapidité de son application.","Le manque d'intérêt du public."],
+c:2,e:"Elle critique la mise en œuvre trop rapide."
+},
+{
+l:"B2",s:"CO",id:"b2co3",
+q:"Un voyageur précise : « Le trajet est certes plus long, néanmoins le train reste plus confortable. » Quel avantage souligne-t-il ?",
+a:["Le prix le plus bas.","Le confort du train.","La rapidité du trajet.","La possibilité de conduire."],
+c:1,e:"Il met en avant le confort malgré la durée."
+},
+{
+l:"B2",s:"CO",id:"b2co4",
+q:"Un directeur affirme : « Nous reporterons la décision jusqu'à ce que les experts aient rendu leur avis. » Que va-t-il faire ?",
+a:["Décider immédiatement.","Attendre l'avis des experts.","Annuler la consultation.","Changer les experts."],
+c:1,e:"La décision sera prise après la consultation des experts."
+},
+{
+l:"B2",s:"CO",id:"b2co5",
+q:"Une journaliste explique que les habitants soutiennent le projet, pourvu que les nuisances sonores soient limitées. Quelle est leur condition ?",
+a:["Une hausse des prix.","Une réduction du bruit.","Une fermeture des commerces.","Une modification des horaires scolaires."],
+c:1,e:"Le soutien dépend de la limitation du bruit."
+},
+
+{
+l:"C1",s:"CE",id:"c1ce1",
+q:"« La multiplication des indicateurs ne garantit nullement une meilleure compréhension d'un phénomène. » Quelle idée exprime cette phrase ?",
+a:["Les indicateurs sont toujours inutiles.","Une quantité importante de données ne suffit pas à comprendre.","Les phénomènes sont simples à expliquer.","Il faut supprimer toute mesure."],
+c:1,e:"La quantité d'indicateurs ne garantit pas la qualité de l'analyse."
+},
+{
+l:"C1",s:"CE",id:"c1ce2",
+q:"Un essai soutient qu'une innovation ne devient socialement bénéfique que si ses usages sont encadrés. Quelle condition est essentielle ?",
+a:["Sa diffusion immédiate.","Son financement exclusif.","L'existence d'un cadre d'utilisation.","La suppression des débats."],
+c:2,e:"L'auteur insiste sur la nécessité d'encadrer les usages."
+},
+{
+l:"C1",s:"CE",id:"c1ce3",
+q:"« Cette hypothèse, séduisante à première vue, ne résiste guère à l'examen des faits. » Que suggère l'auteur ?",
+a:["L'hypothèse est confirmée.","L'hypothèse paraît convaincante mais manque de solidité.","Les faits sont inutiles.","L'analyse est impossible."],
+c:1,e:"L'expression indique que l'hypothèse est finalement peu convaincante."
+},
+{
+l:"C1",s:"CE",id:"c1ce4",
+q:"Un texte affirme que la mémoire collective se construit autant par les silences que par les récits transmis. Quelle idée faut-il retenir ?",
+a:["Seuls les récits officiels comptent.","Les oublis et les silences influencent aussi la mémoire collective.","La mémoire est identique pour tous.","Les témoignages n'ont aucune valeur."],
+c:1,e:"Le texte souligne le rôle des silences dans la construction de la mémoire."
+},
+{
+l:"C1",s:"CE",id:"c1ce5",
+q:"« Loin de constituer une réponse définitive, cette étude ouvre de nouvelles pistes de réflexion. » Quelle est la fonction de l'étude ?",
+a:["Clore le débat.","Fournir une certitude absolue.","Encourager de nouvelles recherches.","Écarter toute discussion."],
+c:2,e:"L'étude ouvre des pistes au lieu de conclure définitivement."
+},
+
+{
+l:"C1",s:"CO",id:"c1co1",
+q:"Un expert explique que la mesure ne saurait être efficace sans une coordination entre les différents acteurs. Quelle est son idée principale ?",
+a:["Chaque acteur doit agir isolément.","La coordination est indispensable à l'efficacité.","La mesure est inutile.","Un seul acteur doit décider."],
+c:1,e:"L'expert insiste sur la coordination des acteurs."
+},
+{
+l:"C1",s:"CO",id:"c1co2",
+q:"Une chercheuse précise : « Ce résultat, pour intéressant qu'il soit, doit être interprété avec prudence. » Quelle attitude recommande-t-elle ?",
+a:["Le rejeter sans examen.","Le généraliser immédiatement.","Éviter les conclusions trop rapides.","L'ignorer définitivement."],
+c:2,e:"Elle invite à une interprétation prudente."
+},
+{
+l:"C1",s:"CO",id:"c1co3",
+q:"Un responsable affirme que la réforme n'aura de portée réelle qu'à la condition d'être accompagnée d'une formation adaptée. Que souligne-t-il ?",
+a:["La formation est secondaire.","La réforme exige une formation adaptée.","La réforme doit être supprimée.","Les compétences sont déjà suffisantes."],
+c:1,e:"La formation est une condition de réussite de la réforme."
+},
+{
+l:"C1",s:"CO",id:"c1co4",
+q:"Une intervenante dit : « Il serait hasardeux d'attribuer cette évolution à une cause unique. » Que veut-elle dire ?",
+a:["Une seule cause est certaine.","Plusieurs facteurs peuvent expliquer l'évolution.","Aucune explication n'existe.","L'évolution est imaginaire."],
+c:1,e:"Elle met en garde contre une explication trop simpliste."
+},
+{
+l:"C1",s:"CO",id:"c1co5",
+q:"Un spécialiste affirme que les résultats sont encourageants, sans pour autant autoriser un optimisme excessif. Quelle est sa position ?",
+a:["Un optimisme mesuré.","Un pessimisme absolu.","Une certitude définitive.","Un rejet des résultats."],
+c:0,e:"Il reconnaît les résultats positifs tout en restant prudent."
+}
+
 ];
 
+// ===================================
+// DEMARRER UN QUIZ
+// ===================================
+
 function startQuiz() {
+
 clearInterval(quizClock);
+quizClock = null;
+quizFinished = false;
+
 document.getElementById("result").classList.add("hidden");
 
 const level = document.getElementById("level").value;
 const skill = document.getElementById("skill").value;
 const key = level + "_" + skill;
+
 const seen = getSeen();
-const pool = bank.filter(q => q.l === level && q.s === skill);
+
+const pool = bank.filter(q =>
+q.l === level && q.s === skill
+);
 
 if (!pool.length) {
 alert("Aucune question disponible pour ce choix.");
 return;
 }
 
-let fresh = shuffle(pool.filter(q => !(seen[key] || []).includes(q.id)));
+let fresh = shuffle(
+pool.filter(q =>
+!(seen[key] || []).includes(q.id)
+)
+);
 
 if (fresh.length === 0) {
 fresh = shuffle(pool);
-document.getElementById("feedback").textContent =
+
+const feedback = document.getElementById("feedback");
+feedback.textContent =
 "Toutes les questions ont déjà été vues. La série recommence.";
-document.getElementById("feedback").classList.remove("hidden");
+feedback.classList.remove("hidden");
+} else {
+document.getElementById("feedback").classList.add("hidden");
 }
 
-const amount = Math.min(Number(document.getElementById("count").value), fresh.length);
-questions = fresh.slice(0, amount);
+const amount = Math.min(
+Number(document.getElementById("count").value),
+fresh.length
+);
+
+questions = fresh.slice(0,amount);
+
 index = 0;
 correct = 0;
 answered = false;
 window.quizChoices = [];
+
 quizMode = document.getElementById("mode").value;
 quizStartedAt = Date.now();
 
 document.getElementById("quiz").classList.remove("hidden");
+
 document.getElementById("quizMode").textContent =
 quizMode === "exam" ? "Mode examen" : "Entraînement";
 
@@ -468,174 +762,279 @@ document.getElementById("next").classList.add("hidden");
 document.getElementById("finish").classList.add("hidden");
 
 if (quizMode === "exam") {
+
 remaining = questions.length * 90;
+
 updateQuizClock();
+
 quizClock = setInterval(() => {
 remaining--;
 updateQuizClock();
-if (remaining <= 0) finishQuiz(true);
-}, 1000);
+
+if (remaining <= 0) {
+finishQuiz(true);
+}
+
+},1000);
+
 } else {
-document.getElementById("quizTimer").textContent = "Sans chronomètre";
+document.getElementById("quizTimer").textContent =
+"Sans chronomètre";
 }
 
 showQuestion();
 }
 
-function updateQuizClock() {
-document.getElementById("quizTimer").textContent = "Temps : " + formatTime(remaining);
-}
+// ===================================
+// AFFICHAGE QUESTIONS
+// ===================================
 
 function formatTime(sec) {
-sec = Math.max(0, sec);
-return String(Math.floor(sec / 60)).padStart(2, "0") + ":" +
-String(sec % 60).padStart(2, "0");
+sec = Math.max(0,sec);
+
+return String(Math.floor(sec / 60)).padStart(2,"0") +
+":" +
+String(sec % 60).padStart(2,"0");
+}
+
+function updateQuizClock() {
+document.getElementById("quizTimer").textContent =
+"Temps : " + formatTime(remaining);
 }
 
 function showQuestion() {
+
 answered = false;
-selectedChoice = null;
+
 const q = questions[index];
 
 document.getElementById("questionNumber").textContent =
 `Question ${index + 1} sur ${questions.length} · Niveau ${q.l}`;
+
 document.getElementById("quizProgress").style.width =
 (index / questions.length * 100) + "%";
+
 document.getElementById("question").textContent = q.q;
-document.getElementById("answers").innerHTML = "";
+
+const answers = document.getElementById("answers");
+answers.innerHTML = "";
 
 document.getElementById("feedback").classList.add("hidden");
 document.getElementById("next").classList.add("hidden");
-document.getElementById("finish").classList.toggle("hidden", quizMode !== "exam");
 
-q.a.forEach((answer, i) => {
+document.getElementById("finish").classList.toggle(
+"hidden",
+quizMode !== "exam"
+);
+
+q.a.forEach((answer,i) => {
+
 const button = document.createElement("button");
+
 button.className = "option";
 button.textContent = (i + 1) + ". " + answer;
+
 button.onclick = () => checkAnswer(i);
-document.getElementById("answers").appendChild(button);
+
+answers.appendChild(button);
+
 });
+
 }
 
+// ===================================
+// CORRECTION
+// ===================================
+
 function checkAnswer(choice) {
-if (answered) return;
+
+if (answered || quizFinished) return;
 
 answered = true;
-selectedChoice = choice;
 window.quizChoices[index] = choice;
 
 const q = questions[index];
+
 const buttons = document.querySelectorAll("#answers button");
 
-buttons.forEach((button, i) => {
+buttons.forEach((button,i) => {
+
 button.disabled = true;
+
 if (quizMode === "practice" && i === q.c) {
 button.style.border = "2px solid var(--good)";
 }
-if (i === choice) button.classList.add("selected");
+
+if (i === choice) {
+button.classList.add("selected");
+}
+
 });
 
 if (choice === q.c) correct++;
 
 const feedback = document.getElementById("feedback");
+
 feedback.classList.remove("hidden");
 
 if (quizMode === "practice") {
-feedback.textContent = (choice === q.c ? "Bonne réponse ! " : "Réponse incorrecte. ") + q.e;
-feedback.style.borderLeft = choice === q.c ?
-"4px solid var(--good)" : "4px solid var(--bad)";
+
+feedback.textContent =
+(choice === q.c ? "Bonne réponse ! " : "Réponse incorrecte. ") + q.e;
+
+feedback.style.borderLeft =
+choice === q.c ?
+"4px solid var(--good)" :
+"4px solid var(--bad)";
+
 } else {
-feedback.textContent = "Réponse enregistrée. La correction sera affichée à la fin.";
+
+feedback.textContent =
+"Réponse enregistrée. La correction sera affichée à la fin.";
+
 }
 
 document.getElementById("next").classList.remove("hidden");
+
 document.getElementById("next").textContent =
-index === questions.length - 1 ? "Voir mon résultat" : "Question suivante";
+index === questions.length - 1 ?
+"Voir mon résultat" :
+"Question suivante";
+
 }
 
 function nextQuestion() {
+
 if (!answered) return;
+
 index++;
+
 if (index < questions.length) {
 showQuestion();
 } else {
 finishQuiz();
 }
+
 }
 
+// ===================================
+// FIN ET RESULTATS
+// ===================================
+
 function finishQuiz(timeUp = false) {
-if (!questions.length) return;
+
+if (!questions.length || quizFinished) return;
+
+quizFinished = true;
 
 clearInterval(quizClock);
 quizClock = null;
 
-const elapsed = Math.max(0, Math.round((Date.now() - quizStartedAt) / 1000));
+const elapsed = Math.max(
+0,
+Math.round((Date.now() - quizStartedAt) / 1000)
+);
 
 total += questions.length;
 good += correct;
 sessions++;
 
-localStorage.setItem("tcfTotal", total);
-localStorage.setItem("tcfGood", good);
-localStorage.setItem("tcfSessions", sessions);
+localStorage.setItem("tcfTotal",total);
+localStorage.setItem("tcfGood",good);
+localStorage.setItem("tcfSessions",sessions);
 
 const key = questions[0].l + "_" + questions[0].s;
 const seen = getSeen();
+
 seen[key] = Array.from(new Set([
 ...(seen[key] || []),
 ...questions.map(q => q.id)
 ]));
-localStorage.setItem("tcfSeen", JSON.stringify(seen));
+
+localStorage.setItem("tcfSeen",JSON.stringify(seen));
 
 const rate = Math.round(correct / questions.length * 100);
-const entry = `Séance ${sessions} : ${correct}/${questions.length} (${rate} %) – ${questions[0].l} ${questions[0].s}`;
 
-const history = JSON.parse(localStorage.getItem("tcfHistory") || "[]");
+const entry =
+`Séance ${sessions} : ${correct}/${questions.length} (${rate} %) – ${questions[0].l} ${questions[0].s}`;
+
+let history = [];
+
+try {
+history = JSON.parse(localStorage.getItem("tcfHistory") || "[]");
+} catch(error) {
+history = [];
+}
+
 history.unshift(entry);
-localStorage.setItem("tcfHistory", JSON.stringify(history.slice(0, 15)));
+
+localStorage.setItem(
+"tcfHistory",
+JSON.stringify(history.slice(0,15))
+);
 
 document.getElementById("quiz").classList.add("hidden");
 document.getElementById("result").classList.remove("hidden");
 
-document.getElementById("resultScore").textContent = correct + "/" + questions.length;
-document.getElementById("resultRate").textContent = rate + "%";
-document.getElementById("resultTime").textContent = formatTime(elapsed);
+document.getElementById("resultScore").textContent =
+correct + "/" + questions.length;
+
+document.getElementById("resultRate").textContent =
+rate + "%";
+
+document.getElementById("resultTime").textContent =
+formatTime(elapsed);
 
 const review = document.getElementById("review");
+
 review.innerHTML = "<h3>Correction détaillée</h3>";
 
 if (timeUp) {
+
 const note = document.createElement("p");
 note.className = "notice";
-note.textContent = "Temps écoulé : le test a été terminé automatiquement.";
+note.textContent =
+"Temps écoulé : le test a été terminé automatiquement.";
+
 review.appendChild(note);
+
 }
 
-questions.forEach((q, i) => {
+questions.forEach((q,i) => {
+
 const chosen = window.quizChoices[i];
+
 const p = document.createElement("p");
 p.className = "notice";
 
-const answerText = chosen === undefined ?
+const answerText =
+chosen === undefined ?
 "Aucune réponse." :
-(chosen === q.c ? "Bonne réponse : " : "Votre réponse : ") + q.a[chosen];
+(chosen === q.c ? "Bonne réponse : " : "Votre réponse : ") +
+q.a[chosen];
 
-p.textContent = `${i + 1}. ${q.q} — ${answerText} Réponse correcte : ${q.a[q.c]}. ${q.e}`;
+p.textContent =
+`${i + 1}. ${q.q} — ${answerText} Réponse correcte : ${q.a[q.c]}. ${q.e}`;
+
 review.appendChild(p);
+
 });
 
 window.quizChoices = [];
+
 updateStats();
+
 }
 
-function escapeHtml(text) {
-return String(text).replace(/[&<>"']/g, char => ({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[char]));
-}
-</script>
+// ===================================
+// STATISTIQUES
+// ===================================
+
 function updateStats() {
-const rate = total ? Math.round(good / total * 100) : 0;
+
+const rate = total ?
+Math.round(good / total * 100) :
+0;
 
 document.getElementById("total").textContent = total;
 document.getElementById("pTotal").textContent = total;
@@ -644,22 +1043,39 @@ document.getElementById("sessions").textContent = sessions;
 document.getElementById("pCorrect").textContent = good;
 document.getElementById("pRate").textContent = rate + "%";
 
-const history = JSON.parse(localStorage.getItem("tcfHistory") || "[]");
+let history = [];
+
+try {
+history = JSON.parse(localStorage.getItem("tcfHistory") || "[]");
+} catch(error) {
+history = [];
+}
+
 const box = document.getElementById("history");
+
 box.innerHTML = "";
 
 if (!history.length) {
+
 box.textContent = "Aucune séance pour le moment.";
+
 } else {
+
 history.forEach(item => {
+
 const p = document.createElement("p");
 p.textContent = item;
+
 box.appendChild(p);
+
 });
+
 }
+
 }
 
 function resetStats() {
+
 if (!confirm("Effacer les statistiques et l'historique ?")) return;
 
 total = 0;
@@ -675,89 +1091,395 @@ sessions = 0;
 ].forEach(key => localStorage.removeItem(key));
 
 updateStats();
+
 }
 
-const writingTopics = [
-"Vous avez participé à une activité culturelle. Écrivez à un ami pour raconter cette expérience.",
-"Vous souhaitez convaincre votre commune d'aménager un espace vert. Rédigez un message argumenté.",
-"Un ami souhaite apprendre une langue étrangère. Donnez-lui des conseils et expliquez les avantages.",
-"Vous avez découvert une nouvelle ville. Racontez votre visite et partagez vos impressions.",
-"Votre quartier organise une journée de nettoyage. Encouragez les habitants à participer.",
-"Vous avez suivi une formation intéressante. Présentez-la et expliquez ce qu'elle vous a apporté.",
-"Les nouvelles technologies occupent une place importante dans notre vie. Donnez votre opinion."
-];
+// ===================================
+// EXPRESSION ECRITE
+// ===================================
 
-const oralTopics = [
-"Présentez une activité que vous aimez pratiquer et expliquez pourquoi.",
-"Les réseaux sociaux rapprochent-ils vraiment les personnes ? Donnez votre avis.",
-"Parlez d'un voyage qui vous a marqué et expliquez ce que vous avez appris.",
-"Faut-il privilégier les transports publics ? Présentez vos arguments.",
-"Le travail à distance améliore-t-il la qualité de vie ? Justifiez votre opinion.",
-"La lecture est-elle toujours importante à l'ère du numérique ? Argumentez.",
-"Les jeunes doivent-ils participer davantage à la vie de leur commune ?"
+const writingTopics = [
+
+"Vous avez participé à une activité culturelle. Écrivez à un ami pour raconter cette expérience.",
+
+"Vous souhaitez convaincre votre commune d'aménager un espace vert. Rédigez un message argumenté.",
+
+"Un ami souhaite apprendre une langue étrangère. Donnez-lui des conseils et expliquez les avantages.",
+
+"Vous avez découvert une nouvelle ville. Racontez votre visite et partagez vos impressions.",
+
+"Votre quartier organise une journée de nettoyage. Encouragez les habitants à participer.",
+
+"Vous avez suivi une formation intéressante. Présentez-la et expliquez ce qu'elle vous a apporté.",
+
+"Les nouvelles technologies occupent une place importante dans notre vie. Donnez votre opinion."
+
 ];
 
 function newWriting() {
+
 const topic = writingTopics[
 Math.floor(Math.random() * writingTopics.length)
 ];
-document.getElementById("writingPrompt").textContent = "Sujet : " + topic;
+
+document.getElementById("writingPrompt").textContent =
+"Sujet : " + topic;
+
 }
 
 function countWords() {
+
 const text = document.getElementById("essay").value.trim();
-const count = text ? text.split(/\s+/).length : 0;
+
+const count = text ?
+text.split(/\s+/).length :
+0;
+
 document.getElementById("wordCount").textContent = count;
+
 }
 
 document.getElementById("essay").value =
 localStorage.getItem("tcfEssay") || "";
 
+document.getElementById("essay").addEventListener(
+"input",
+countWords
+);
+
 countWords();
 
 function saveEssay() {
+
 localStorage.setItem(
 "tcfEssay",
 document.getElementById("essay").value
 );
+
 document.getElementById("savedMessage").textContent =
 "Rédaction enregistrée sur cet appareil.";
+
 }
 
+// ===================================
+// EXPRESSION ORALE
+// ===================================
+
+const oralTopics = [
+
+"Présentez une activité que vous aimez pratiquer et expliquez pourquoi.",
+
+"Les réseaux sociaux rapprochent-ils vraiment les personnes ? Donnez votre avis.",
+
+"Parlez d'un voyage qui vous a marqué et expliquez ce que vous avez appris.",
+
+"Faut-il privilégier les transports publics ? Présentez vos arguments.",
+
+"Le travail à distance améliore-t-il la qualité de vie ? Justifiez votre opinion.",
+
+"La lecture est-elle toujours importante à l'ère du numérique ? Argumentez.",
+
+"Les jeunes doivent-ils participer davantage à la vie de leur commune ?"
+
+];
+
 function newOral() {
+
 const topic = oralTopics[
 Math.floor(Math.random() * oralTopics.length)
 ];
+
 document.getElementById("oralPrompt").textContent = topic;
+
 }
 
+// ===================================
+// CHRONOMETRE ORAL
+// ===================================
+
 function displayTimer() {
-document.getElementById("timer").textContent = formatTime(seconds);
+
+document.getElementById("timer").textContent =
+formatTime(seconds);
+
 }
 
 function startTimer() {
+
 if (timerInterval) return;
 
 if (seconds <= 0) seconds = 120;
 
 timerInterval = setInterval(() => {
+
 seconds--;
+
 displayTimer();
 
 if (seconds <= 0) {
+
 stopTimer();
+
 alert("Temps de préparation terminé !");
+
 }
-}, 1000);
+
+},1000);
+
 }
 
 function stopTimer() {
+
 clearInterval(timerInterval);
 timerInterval = null;
+
 }
 
+function resetTimer() {
+
+stopTimer();
+
+seconds = 120;
+
+displayTimer();
+
+}
+
+// ===================================
+// MICROPHONE ET TRANSCRIPTION
+// ===================================
+
+let speechRecognition = null;
+let mediaRecorder = null;
+let microphoneStream = null;
+let audioChunks = [];
+let audioURL = null;
+
+let isRecording = false;
+
+async function startSpeaking() {
+
+if (isRecording) return;
+
+const status = document.getElementById("micStatus");
+const start = document.getElementById("micStart");
+const stop = document.getElementById("micStop");
+const transcript = document.getElementById("transcript");
+
+const SpeechAPI =
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
+
+const canRecord =
+typeof MediaRecorder !== "undefined" &&
+navigator.mediaDevices &&
+navigator.mediaDevices.getUserMedia;
+
+if (!SpeechAPI && !canRecord) {
+
+status.textContent =
+"Microphone non pris en charge par ce navigateur.";
+
+return;
+
+}
+
+try {
+
+start.disabled = true;
+
+if (SpeechAPI) {
+
+speechRecognition = new SpeechAPI();
+
+speechRecognition.lang = "fr-FR";
+speechRecognition.continuous = true;
+speechRecognition.interimResults = true;
+
+let finalText = "";
+
+speechRecognition.onresult = function(event) {
+
+let interimText = "";
+
+for (
+let i = event.resultIndex;
+i < event.results.length;
+i++
+) {
+
+const result = event.results[i];
+
+if (result.isFinal) {
+finalText += result[0].transcript + " ";
+} else {
+interimText += result[0].transcript;
+}
+
+}
+
+transcript.value = finalText + interimText;
+
+};
+
+speechRecognition.onerror = function(event) {
+
+status.textContent =
+"Erreur de reconnaissance : " + event.error;
+
+};
+
+speechRecognition.onend = function() {
+
+if (isRecording) {
+
+status.textContent =
+"La reconnaissance vocale s'est arrêtée. Vous pouvez relancer le microphone.";
+
+isRecording = false;
+start.disabled = false;
+stop.disabled = true;
+
+}
+
+};
+
+speechRecognition.start();
+
+isRecording = true;
+
+status.textContent =
+"Micro actif : parlez en français.";
+
+stop.disabled = false;
+
+} else {
+
+// Enregistrement audio de secours
+
+microphoneStream =
+await navigator.mediaDevices.getUserMedia({audio:true});
+
+mediaRecorder = new MediaRecorder(microphoneStream);
+
+audioChunks = [];
+
+mediaRecorder.ondataavailable = function(event) {
+
+if (event.data.size > 0) {
+audioChunks.push(event.data);
+}
+
+};
+
+mediaRecorder.onstop = function() {
+
+const audioBlob = new Blob(audioChunks,{
+type: mediaRecorder.mimeType
+});
+
+if (audioURL) {
+URL.revokeObjectURL(audioURL);
+}
+
+audioURL = URL.createObjectURL(audioBlob);
+
+const player = document.getElementById("audioPlayback");
+
+player.src = audioURL;
+player.classList.remove("hidden");
+
+status.textContent =
+"Enregistrement terminé. Vous pouvez écouter votre réponse.";
+
+};
+
+mediaRecorder.start();
+
+isRecording = true;
+
+status.textContent =
+"Enregistrement audio en cours. La transcription automatique n'est pas disponible.";
+
+stop.disabled = false;
+
+}
+
+} catch(error) {
+
+start.disabled = false;
+stop.disabled = true;
+
+isRecording = false;
+
+status.textContent =
+"Impossible d'accéder au microphone : " + error.message;
+
+if (microphoneStream) {
+
+microphoneStream.getTracks().forEach(track => track.stop());
+
+microphoneStream = null;
+
+}
+
+}
+
+}
+
+function stopSpeaking() {
+
+const status = document.getElementById("micStatus");
+
+if (speechRecognition) {
+
+const recognition = speechRecognition;
+
+speechRecognition = null;
+
+recognition.stop();
+
+}
+
+if (mediaRecorder && mediaRecorder.state !== "inactive") {
+
+mediaRecorder.stop();
+
+}
+
+if (microphoneStream) {
+
+microphoneStream.getTracks().forEach(track => track.stop());
+
+microphoneStream = null;
+
+}
+
+isRecording = false;
+
+document.getElementById("micStart").disabled = false;
+document.getElementById("micStop").disabled = true;
+
+if (!mediaRecorder) {
+
+status.textContent = "Exercice oral terminé.";
+
+} else {
+
+status.textContent = "Enregistrement terminé.";
+
+}
+
+}
+
+// ===================================
+// INITIALISATION
+// ===================================
+
 updateStats();
+displayTimer();
+
 </script>
+
 </body>
 </html>
-
