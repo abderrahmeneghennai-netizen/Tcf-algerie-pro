@@ -1,4 +1,3 @@
-
 name: Build TCF Algerie Pro Android
 
 on:
@@ -29,6 +28,10 @@ jobs:
 
       - name: Ajouter Android
         run: npx cap add android
+
+      - name: Autoriser le microphone
+        run: |
+          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />' android/app/src/main/AndroidManifest.xml
 
       - name: Synchroniser Android
         run: npx cap sync android
