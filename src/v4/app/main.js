@@ -4,6 +4,7 @@ import { sqliteDatabase } from '../database/SQLiteDatabase.js';
 import { ExerciseService } from '../services/ExerciseService.js';
 import { ProgressService } from '../services/ProgressService.js';
 import { SeedService } from '../services/SeedService.js';
+import { ContentService } from '../services/ContentService.js';
 
 const el = {
   title: document.querySelector('#statusTitle'),
@@ -20,10 +21,23 @@ const el = {
   score: document.querySelector('#scoreLabel'),
   historyButton: document.querySelector('#historyButton'),
   historyPanel: document.querySelector('#historyPanel'),
-  historyList: document.querySelector('#historyList')
+  historyList: document.querySelector('#historyList'),
+  exerciseTitle: document.querySelector('#exerciseTitle'),
+  levelChip: document.querySelector('#levelChip'),
+  grammarButton: document.querySelector('#grammarModuleButton'),
+  ceButton: document.querySelector('#ceModuleButton'),
+  b1Button: document.querySelector('#b1LevelButton'),
+  b2Button: document.querySelector('#b2LevelButton'),
+  readingSupport: document.querySelector('#readingSupport'),
+  readingTitle: document.querySelector('#readingTitle'),
+  readingText: document.querySelector('#readingText')
 };
 const exercises = new ExerciseService(sqliteDatabase);
 const progress = new ProgressService(sqliteDatabase);
+const content = new ContentService(sqliteDatabase);
+const moduleIds = {};
+let activeModule = 'GRAM';
+let activeLevel = 'B1';
 let moduleId = null;
 let batch = [];
 let index = 0;
@@ -44,12 +58,23 @@ function normalize(value) {
 function updateScore() {
   el.score.textContent = correct + ' bonne(s) réponse(s) sur ' + attempted;
 }
-function displayQuestion() {
+async function displayQuestion() {
   const item = batch[index];
   if (!item) return;
   answered = false;
   startedAt = Date.now();
   el.chapter.textContent = item.chapitre + ' · Difficulté ' + item.difficulte + '/5';
+  if (item.support_ecrit_id && activeModule === 'CE') {
+    const support = await content.getWrittenSupport(item.support_ecrit_id);
+    if (!support) throw new Error('Le texte de compréhension écrite est introuvable.');
+    el.readingTitle.textContent = support.titre;
+    el.readingText.textContent = support.texte_contenu;
+    el.readingSupport.hidden = false;
+  } else {
+    el.readingSupport.hidden = true;
+    el.readingTitle.textContent = '';
+    el.readingText.textContent = '';
+  }
   el.question.textContent = item.enonce;
   el.progress.textContent = 'Question ' + (index + 1) + ' / ' + batch.length;
   el.feedback.hidden = true;
@@ -172,7 +197,7 @@ async function showHistory() {
 async function loadBatch() {
   batch = await exercises.getNextBatch({
     moduleId,
-    level: 'B1',
+    level: activeLevel,
     limit: 5,
     premiumAccess: false
   });
@@ -184,7 +209,46 @@ async function loadBatch() {
     el.next.hidden = true;
     return;
   }
-  displayQuestion();
+  await displayQuestion();
+}
+async function refreshModuleStats() {
+  const savedStats = await progress.getModuleStats(moduleId);
+  attempted = Number(savedStats?.total_tentees ?? 0);
+  correct = Number(savedStats?.total_reussies ?? 0);
+  updateScore();
+}
+function updateTrainingControls() {
+  const isCE = activeModule === 'CE';
+  el.exerciseTitle.textContent = (isCE ? 'Compréhension écrite' : 'Grammaire') + ' — niveau ' + activeLevel;
+  el.levelChip.textContent = activeLevel;
+  el.grammarButton?.classList.toggle('selected', !isCE);
+  el.ceButton?.classList.toggle('selected', isCE);
+  el.b1Button?.classList.toggle('selected', activeLevel === 'B1');
+  el.b2Button?.classList.toggle('selected', activeLevel === 'B2');
+}
+async function chooseModule(code) {
+  if (!moduleIds[code]) return;
+  activeModule = code;
+  moduleId = moduleIds[code];
+  updateTrainingControls();
+  await refreshModuleStats();
+  await loadBatch();
+  status('success', 'Module chargé',
+    (code === 'CE' ? 'Compréhension écrite' : 'Grammaire') + ' — niveau ' + activeLevel + ' : exercices disponibles hors ligne.',
+    batch.length + ' question(s) chargée(s).');
+}
+async function chooseLevel(level) {
+  activeLevel = level;
+  updateTrainingControls();
+  await refreshModuleStats();
+  await loadBatch();
+  status('success', 'Niveau chargé',
+    (activeModule === 'CE' ? 'Compréhension écrite' : 'Grammaire') + ' — niveau ' + activeLevel + '.',
+    batch.length + ' question(s) disponibles hors ligne.');
+}
+function handleModuleError(error) {
+  console.error('[TCF V4.0] Changement de module impossible', error);
+  status('error', 'Chargement impossible', 'Le module demandé ne peut pas être chargé.', String(error?.message || error));
 }
 async function start() {
   try {
@@ -203,33 +267,39 @@ async function start() {
 
     await new SeedService(sqliteDatabase).ensureInitialContent();
     const moduleResult = await sqliteDatabase.query(
-      "SELECT id FROM modules WHERE code = 'GRAM' AND is_active = 1 LIMIT 1"
+      "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE') AND is_active = 1"
     );
-    moduleId = moduleResult.values?.[0]?.id;
-    if (!moduleId) throw new Error('Le module Grammaire n’a pas été initialisé.');
-
-    // Restaurer le score cumulé depuis SQLite à chaque démarrage.
-    const savedStats = await progress.getModuleStats(moduleId);
-    attempted = Number(savedStats?.total_tentees ?? 0);
-    correct = Number(savedStats?.total_reussies ?? 0);
-    updateScore();
+    for (const row of (moduleResult.values ?? [])) moduleIds[row.code] = row.id;
+    if (!moduleIds.GRAM || !moduleIds.CE) throw new Error('Les modules Grammaire et Compréhension écrite ne sont pas initialisés.');
+    moduleId = moduleIds.GRAM;
+    activeModule = 'GRAM';
+    activeLevel = 'B1';
+    await refreshModuleStats();
+    updateTrainingControls();
 
     el.panel.hidden = false;
     // Les commandes d'interface sont attachées uniquement si leur élément existe.
     // Cela évite qu'un ancien index.html en cache bloque toute l'initialisation.
     if (el.historyButton) el.historyButton.addEventListener('click', showHistory);
+    if (el.grammarButton) el.grammarButton.addEventListener('click', () => chooseModule('GRAM').catch(handleModuleError));
+    if (el.ceButton) el.ceButton.addEventListener('click', () => chooseModule('CE').catch(handleModuleError));
+    if (el.b1Button) el.b1Button.addEventListener('click', () => chooseLevel('B1').catch(handleModuleError));
+    if (el.b2Button) el.b2Button.addEventListener('click', () => chooseLevel('B2').catch(handleModuleError));
     await loadBatch();
     if (el.next) el.next.addEventListener('click', async () => {
-      if (index + 1 < batch.length) {
-        index += 1;
-        displayQuestion();
-      } else {
-        try { await loadBatch(); }
-        catch (error) { status('error', 'Chargement impossible', 'La suite ne peut pas être chargée.', String(error?.message || error)); }
+      try {
+        if (index + 1 < batch.length) {
+          index += 1;
+          await displayQuestion();
+        } else {
+          await loadBatch();
+        }
+      } catch (error) {
+        status('error', 'Chargement impossible', 'La question ou son document ne peut pas être chargé.', String(error?.message || error));
       }
     });
     status('success', 'Exercices disponibles',
-      'Le pack gratuit de Grammaire B1 est chargé. Les réponses sont enregistrées hors ligne.',
+      'Grammaire B1 et Compréhension écrite B1-B2 sont disponibles hors ligne.',
       count + ' tables vérifiées · ' + batch.length + ' questions chargées.');
   } catch (error) {
     console.error('[TCF V4.0] Initialisation impossible', error);
