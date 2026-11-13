@@ -5,7 +5,7 @@ import { ExerciseService } from '../services/ExerciseService.js';
 import { ProgressService } from '../services/ProgressService.js';
 import { SeedService } from '../services/SeedService.js';
 
-const elements = {
+const el = {
   title: document.querySelector('#statusTitle'),
   message: document.querySelector('#statusMessage'),
   technical: document.querySelector('#technicalMessage'),
@@ -19,189 +19,159 @@ const elements = {
   progress: document.querySelector('#progressLabel'),
   score: document.querySelector('#scoreLabel')
 };
-
-const exerciseService = new ExerciseService(sqliteDatabase);
-const progressService = new ProgressService(sqliteDatabase);
-
-let grammarModuleId = null;
+const exercises = new ExerciseService(sqliteDatabase);
+const progress = new ProgressService(sqliteDatabase);
+let moduleId = null;
 let batch = [];
-let batchIndex = 0;
+let index = 0;
 let answered = false;
-let correctCount = 0;
-let totalAnswered = 0;
-let questionStartedAt = 0;
+let correct = 0;
+let attempted = 0;
+let startedAt = 0;
 
-function showStatus(kind, heading, detail, diagnostic = '') {
-  elements.title.textContent = heading;
-  elements.message.textContent = detail;
-  elements.technical.textContent = diagnostic;
-  elements.dot.className = 'status-dot ' + kind;
+function status(kind, heading, detail, diagnostic = '') {
+  el.title.textContent = heading;
+  el.message.textContent = detail;
+  el.technical.textContent = diagnostic;
+  el.dot.className = 'status-dot ' + kind;
 }
-
-function normalizeAnswer(value) {
+function normalize(value) {
   return String(value ?? '').trim().toLocaleLowerCase('fr');
 }
-
 function updateScore() {
-  elements.score.textContent = correctCount + ' bonne(s) réponse(s) sur ' + totalAnswered;
+  el.score.textContent = correct + ' bonne(s) réponse(s) sur ' + attempted;
 }
-
-function showQuestion() {
-  const exercise = batch[batchIndex];
-  if (!exercise) {
-    elements.question.textContent = 'Aucune question disponible pour le moment.';
-    elements.chapter.textContent = '';
-    elements.answers.replaceChildren();
-    return;
-  }
-
+function displayQuestion() {
+  const item = batch[index];
+  if (!item) return;
   answered = false;
-  questionStartedAt = Date.now();
-  elements.chapter.textContent = exercise.chapitre + ' · Difficulté ' + exercise.difficulte + '/5';
-  elements.question.textContent = exercise.enonce;
-  elements.progress.textContent = 'Question ' + (batchIndex + 1) + ' / ' + batch.length;
-  elements.feedback.hidden = true;
-  elements.feedback.textContent = '';
-  elements.next.hidden = true;
-  elements.answers.replaceChildren();
+  startedAt = Date.now();
+  el.chapter.textContent = item.chapitre + ' · Difficulté ' + item.difficulte + '/5';
+  el.question.textContent = item.enonce;
+  el.progress.textContent = 'Question ' + (index + 1) + ' / ' + batch.length;
+  el.feedback.hidden = true;
+  el.feedback.textContent = '';
+  el.next.hidden = true;
+  el.answers.replaceChildren();
 
-  let options;
-  try {
-    options = JSON.parse(exercise.options_json || '[]');
-  } catch {
-    options = [];
-  }
-
+  let options = [];
+  try { options = JSON.parse(item.options_json || '[]'); } catch { /* données invalides */ }
   if (!Array.isArray(options) || options.length < 2) {
-    elements.feedback.hidden = false;
-    elements.feedback.textContent = 'Les choix de réponse de cette question sont indisponibles.';
+    el.feedback.textContent = 'Les choix de réponse sont indisponibles.';
+    el.feedback.hidden = false;
     return;
   }
-
   options.forEach((option) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'answer-button';
     button.textContent = option;
-    button.addEventListener('click', () => submitAnswer(exercise, option, button));
-    elements.answers.append(button);
+    button.addEventListener('click', () => submitAnswer(item, option, button));
+    el.answers.append(button);
   });
 }
-
-async function submitAnswer(exercise, selectedAnswer, selectedButton) {
+async function submitAnswer(item, selected, selectedButton) {
   if (answered) return;
   answered = true;
+  const isCorrect = normalize(selected) === normalize(item.bonne_reponse);
+  attempted += 1;
+  if (isCorrect) correct += 1;
 
-  const isCorrect = normalizeAnswer(selectedAnswer) === normalizeAnswer(exercise.bonne_reponse);
-  totalAnswered += 1;
-  if (isCorrect) correctCount += 1;
-
-  [...elements.answers.querySelectorAll('button')].forEach((button) => {
+  [...el.answers.querySelectorAll('button')].forEach((button) => {
     button.disabled = true;
-    if (normalizeAnswer(button.textContent) === normalizeAnswer(exercise.bonne_reponse)) {
-      button.classList.add('correct');
-    }
+    if (normalize(button.textContent) === normalize(item.bonne_reponse)) button.classList.add('correct');
   });
   if (!isCorrect) selectedButton.classList.add('incorrect');
 
   const snapshot = {
-    stable_id: exercise.stable_id,
-    chapitre: exercise.chapitre,
-    niveau: exercise.niveau,
-    enonce: exercise.enonce,
-    options: JSON.parse(exercise.options_json || '[]'),
-    bonne_reponse: exercise.bonne_reponse,
-    explication: exercise.explication
+    stable_id: item.stable_id,
+    chapitre: item.chapitre,
+    niveau: item.niveau,
+    enonce: item.enonce,
+    options: JSON.parse(item.options_json || '[]'),
+    bonne_reponse: item.bonne_reponse,
+    explication: item.explication
   };
-
+  let saved = true;
   try {
-    await progressService.recordAnswer({
-      exercise,
+    await progress.recordAnswer({
+      exercise: item,
       questionSnapshot: snapshot,
-      answer: selectedAnswer,
+      answer: selected,
       isCorrect,
-      elapsedSeconds: Math.max(0, Math.round((Date.now() - questionStartedAt) / 1000))
+      elapsedSeconds: Math.max(0, Math.round((Date.now() - startedAt) / 1000))
     });
-    elements.feedback.textContent = (isCorrect ? 'Bonne réponse ! ' : 'Pas tout à fait. La bonne réponse est : ' + exercise.bonne_reponse + '. ') + exercise.explication;
   } catch (error) {
-    console.error('[TCF V4.0] Enregistrement de la réponse impossible', error);
-    elements.feedback.textContent = (isCorrect ? 'Bonne réponse. ' : 'Réponse incorrecte. ') +
-      exercise.explication + ' Attention : cette tentative n’a pas pu être enregistrée.';
+    saved = false;
+    console.error('[TCF V4.0] Enregistrement impossible', error);
   }
 
-  elements.feedback.hidden = false;
-  elements.next.hidden = false;
-  elements.next.textContent = batchIndex + 1 < batch.length ? 'Question suivante' : 'Charger la suite';
+  el.feedback.textContent =
+    (isCorrect ? 'Bonne réponse ! ' : 'Pas tout à fait. La bonne réponse est : ' + item.bonne_reponse + '. ') +
+    item.explication + (saved ? '' : ' Attention : cette tentative n’a pas pu être enregistrée.');
+  el.feedback.hidden = false;
+  el.next.hidden = false;
+  el.next.textContent = index + 1 < batch.length ? 'Question suivante' : 'Charger la suite';
   updateScore();
 }
-
 async function loadBatch() {
-  batch = await exerciseService.getNextBatch({
-    moduleId: grammarModuleId,
+  batch = await exercises.getNextBatch({
+    moduleId,
     level: 'B1',
     limit: 5,
     premiumAccess: false
   });
-  batchIndex = 0;
-  if (batch.length === 0) {
-    elements.question.textContent = 'Aucune question gratuite disponible pour ce niveau.';
-    elements.chapter.textContent = '';
-    elements.answers.replaceChildren();
-    elements.next.hidden = true;
+  index = 0;
+  if (!batch.length) {
+    el.chapter.textContent = '';
+    el.question.textContent = 'Aucune question gratuite disponible pour ce niveau.';
+    el.answers.replaceChildren();
+    el.next.hidden = true;
     return;
   }
-  showQuestion();
+  displayQuestion();
 }
-
-async function startV4() {
+async function start() {
   try {
     if (!window.Capacitor?.isNativePlatform?.()) {
-      showStatus('warning', 'Version Android requise',
+      status('warning', 'Version Android requise',
         'Installez l’APK V4.0 pour utiliser les exercices et la base SQLite locale.',
         'Le mode navigateur ne démarre pas la base SQLite native.');
       return;
     }
-
     await sqliteDatabase.open(schemaSql);
-    const result = await sqliteDatabase.query(
+    const tables = await sqliteDatabase.query(
       "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
     );
-    const tableCount = result.values?.length ?? 0;
-    if (tableCount !== 14) {
-      throw new Error('Nombre de tables inattendu : ' + tableCount + ' (14 attendues).');
-    }
+    const count = tables.values?.length ?? 0;
+    if (count !== 14) throw new Error('Nombre de tables inattendu : ' + count + ' (14 attendues).');
 
     await new SeedService(sqliteDatabase).ensureInitialContent();
     const moduleResult = await sqliteDatabase.query(
       "SELECT id FROM modules WHERE code = 'GRAM' AND is_active = 1 LIMIT 1"
     );
-    grammarModuleId = moduleResult.values?.[0]?.id;
-    if (!grammarModuleId) throw new Error('Le module Grammaire n’a pas été initialisé.');
+    moduleId = moduleResult.values?.[0]?.id;
+    if (!moduleId) throw new Error('Le module Grammaire n’a pas été initialisé.');
 
-    elements.panel.hidden = false;
+    el.panel.hidden = false;
     await loadBatch();
-    elements.next.addEventListener('click', async () => {
-      if (batchIndex + 1 < batch.length) {
-        batchIndex += 1;
-        showQuestion();
+    el.next.addEventListener('click', async () => {
+      if (index + 1 < batch.length) {
+        index += 1;
+        displayQuestion();
       } else {
-        try {
-          await loadBatch();
-        } catch (error) {
-          showStatus('error', 'Chargement impossible', 'La suite des exercices ne peut pas être chargée.', String(error?.message || error));
-        }
+        try { await loadBatch(); }
+        catch (error) { status('error', 'Chargement impossible', 'La suite ne peut pas être chargée.', String(error?.message || error)); }
       }
     });
-
-    showStatus('success', 'Exercices disponibles',
-      'La base locale est prête. Le pack gratuit de Grammaire B1 est chargé.',
-      tableCount + ' tables vérifiées · Questions et résultats enregistrés hors ligne.');
+    status('success', 'Exercices disponibles',
+      'Le pack gratuit de Grammaire B1 est chargé. Les réponses sont enregistrées hors ligne.',
+      count + ' tables vérifiées · ' + batch.length + ' questions chargées.');
   } catch (error) {
     console.error('[TCF V4.0] Initialisation impossible', error);
-    showStatus('error', 'Initialisation à vérifier',
+    status('error', 'Initialisation à vérifier',
       'La base SQLite ou le pack d’exercices n’a pas pu être initialisé.',
       String(error?.message || error));
   }
 }
-
-startV4();
+start();
