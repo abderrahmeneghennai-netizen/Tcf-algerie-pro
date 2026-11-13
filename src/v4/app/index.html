@@ -42,6 +42,14 @@
         <p class="feedback" id="feedback" hidden aria-live="polite"></p>
         <button class="primary-button" id="nextButton" type="button" hidden>Question suivante</button>
       </article>
+      <button class="secondary-button" id="historyButton" type="button">Voir mon historique</button>
+      <section class="history-panel" id="historyPanel" hidden aria-labelledby="historyTitle">
+        <div class="history-heading">
+          <h2 id="historyTitle">Historique de mes réponses</h2>
+          <span>50 dernières tentatives</span>
+        </div>
+        <div id="historyList" class="history-list" aria-live="polite"></div>
+      </section>
     </section>
 
     <section class="modules">
