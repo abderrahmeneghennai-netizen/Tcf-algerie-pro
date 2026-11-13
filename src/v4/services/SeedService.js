@@ -206,7 +206,7 @@ export class SeedService {
              nb_mots_attendu, grille_evaluation_json, is_archived)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
           [packId, subject.code, moduleIds.EE, subject.level, subject.prompt,
-            0, subject.min + '-' + subject.max + ' mots', JSON.stringify(subject.rubric)]
+            1, subject.min + '-' + subject.max + ' mots', JSON.stringify(subject.rubric)]
         );
       }
 
