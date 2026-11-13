@@ -35,6 +35,9 @@ jobs:
       - name: Ajouter Android
         run: npx cap add android
 
+      - name: Installer l'outil de génération d'icône
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
       - name: Générer la nouvelle icône Android
         run: |
           mkdir -p android/app/src/main/res/drawable-nodpi
