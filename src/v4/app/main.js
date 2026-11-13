@@ -1059,7 +1059,12 @@ async function start() {
     if (el.grammarButton) el.grammarButton.addEventListener('click', () => chooseModule('GRAM').catch(handleModuleError));
     if (el.ceButton) el.ceButton.addEventListener('click', () => chooseModule('CE').catch(handleModuleError));
     if (el.coButton) el.coButton.addEventListener('click', () => chooseModule('CO').catch(handleModuleError));
-    if (el.eoButton) el.eoButton.addEventListener('click', () => chooseModule('EO').catch(handleModuleError));\n    if (el.eeButton) el.eeButton.addEventListener('click', () => chooseModule('EE').catch(handleModuleError));\n    if (el.writingSubject) el.writingSubject.addEventListener('change', displayWritingSubject);\n    if (el.writingAnswer) el.writingAnswer.addEventListener('input', updateWritingWordCount);\n    if (el.writingSave) el.writingSave.addEventListener('click', saveWritingProduction);\n    if (el.writingProductionsToggle) el.writingProductionsToggle.addEventListener('click', toggleWritingProductions);
+    if (el.eoButton) el.eoButton.addEventListener('click', () => chooseModule('EO').catch(handleModuleError));
+    if (el.eeButton) el.eeButton.addEventListener('click', () => chooseModule('EE').catch(handleModuleError));
+    if (el.writingSubject) el.writingSubject.addEventListener('change', displayWritingSubject);
+    if (el.writingAnswer) el.writingAnswer.addEventListener('input', updateWritingWordCount);
+    if (el.writingSave) el.writingSave.addEventListener('click', saveWritingProduction);
+    if (el.writingProductionsToggle) el.writingProductionsToggle.addEventListener('click', toggleWritingProductions);
     if (el.oralSubject) el.oralSubject.addEventListener('change', displayOralSubject);
     if (el.oralRecord) el.oralRecord.addEventListener('click', startOralRecording);
     if (el.oralStop) el.oralStop.addEventListener('click', stopOralRecording);
