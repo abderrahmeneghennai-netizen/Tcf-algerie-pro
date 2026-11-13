@@ -5,6 +5,7 @@ import { ExerciseService } from '../services/ExerciseService.js';
 import { ProgressService } from '../services/ProgressService.js';
 import { SeedService } from '../services/SeedService.js';
 import { ContentService } from '../services/ContentService.js';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 
 const el = {
   title: document.querySelector('#statusTitle'),
@@ -67,28 +68,51 @@ function normalize(value) {
 function updateScore() {
   el.score.textContent = correct + ' bonne(s) réponse(s) sur ' + attempted;
 }
-function stopAudio() {
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+async function stopAudio() {
+  try {
+    await TextToSpeech.stop();
+  } catch (error) {
+    console.warn('[TCF V4.0] Arrêt audio non confirmé', error);
+  }
   if (el.audioStatus && currentAudio) el.audioStatus.textContent = 'Lecture arrêtée.';
 }
 
-function playAudio() {
+async function playAudio() {
   if (!currentAudio?.transcription) return;
-  if (!('speechSynthesis' in window) || typeof window.SpeechSynthesisUtterance !== 'function') {
-    el.audioStatus.textContent = 'La lecture vocale n’est pas disponible sur cet appareil. Vérifiez que le moteur de synthèse vocale français est installé.';
-    return;
+  el.audioPlay.disabled = true;
+  el.audioStatus.textContent = 'Préparation de la lecture audio…';
+  try {
+    await TextToSpeech.stop();
+    const supported = await TextToSpeech.isLanguageSupported({ lang: 'fr-FR' });
+    if (!supported.supported) {
+      const available = await TextToSpeech.getSupportedLanguages();
+      const frenchLanguage = (available.languages || []).find((language) => /^fr([_-]|$)/i.test(language));
+      if (!frenchLanguage) {
+        throw new Error('Aucune voix française n’est proposée par le moteur vocal Android.');
+      }
+      await TextToSpeech.speak({
+        text: currentAudio.transcription,
+        lang: frenchLanguage,
+        rate: activeLevel === 'B2' ? 0.96 : 0.91,
+        pitch: 1,
+        volume: 1
+      });
+    } else {
+      await TextToSpeech.speak({
+        text: currentAudio.transcription,
+        lang: 'fr-FR',
+        rate: activeLevel === 'B2' ? 0.96 : 0.91,
+        pitch: 1,
+        volume: 1
+      });
+    }
+    el.audioStatus.textContent = 'Écoute terminée. Vous pouvez réécouter le document.';
+  } catch (error) {
+    console.error('[TCF V4.0] Lecture native impossible', error);
+    el.audioStatus.textContent = 'La lecture audio a échoué : ' + String(error?.message || error);
+  } finally {
+    el.audioPlay.disabled = false;
   }
-  window.speechSynthesis.cancel();
-  const utterance = new window.SpeechSynthesisUtterance(currentAudio.transcription);
-  utterance.lang = 'fr-FR';
-  utterance.rate = activeLevel === 'B2' ? 0.96 : 0.91;
-  utterance.pitch = 1;
-  const frenchVoice = window.speechSynthesis.getVoices().find((voice) => /^fr([_-]|$)/i.test(voice.lang));
-  if (frenchVoice) utterance.voice = frenchVoice;
-  utterance.onstart = () => { el.audioStatus.textContent = 'Lecture en cours…'; };
-  utterance.onend = () => { el.audioStatus.textContent = 'Écoute terminée. Vous pouvez réécouter le document.'; };
-  utterance.onerror = () => { el.audioStatus.textContent = 'La lecture a échoué. Vérifiez la disponibilité de la voix française sur votre appareil.'; };
-  window.speechSynthesis.speak(utterance);
 }
 
 async function displayQuestion() {
@@ -123,7 +147,7 @@ async function displayQuestion() {
     el.audioTranscript.textContent = currentAudio.transcription;
     el.audioTranscript.hidden = true;
     el.transcriptionButton.hidden = true;
-    el.audioStatus.textContent = 'Prêt à écouter. La lecture utilise la voix française installée sur votre appareil.';
+    el.audioStatus.textContent = 'Prêt à écouter. Lecture par le moteur vocal Android.';
     el.audioSupport.hidden = false;
   } else {
     currentAudio = null;
