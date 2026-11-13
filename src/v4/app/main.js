@@ -110,6 +110,7 @@ async function submitAnswer(item, selected, selectedButton) {
 
   const snapshot = {
     stable_id: item.stable_id,
+    module_code: activeModule,
     chapitre: item.chapitre,
     niveau: item.niveau,
     enonce: item.enonce,
@@ -162,7 +163,7 @@ async function showHistory() {
         const heading = document.createElement('div');
         heading.className = 'history-entry-heading';
         const title = document.createElement('h3');
-        title.textContent = snapshot.chapitre || 'Exercice de grammaire';
+        title.textContent = (snapshot.module_code === 'CE' ? 'Compréhension écrite · ' : '') + (snapshot.chapitre || 'Exercice');
         const result = document.createElement('span');
         result.className = entry.est_correct ? 'history-result good' : 'history-result wrong';
         result.textContent = entry.est_correct ? 'Correcte' : 'À revoir';
