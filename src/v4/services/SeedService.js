@@ -43,6 +43,37 @@ const CE_QUESTIONS = [
   { stableId:'ce-b2-004', support:'ce-b2-article-teletravail', level:'B2', chapter:'Comprendre une conséquence', prompt:'Quel risque peut apparaître lorsque l’on travaille à domicile ?', options:['La frontière entre travail et repos devient moins claire.','Les trajets quotidiens deviennent plus longs.','Les équipes ne peuvent plus communiquer.','Les entreprises ferment leurs bureaux immédiatement.'], answer:'La frontière entre travail et repos devient moins claire.', explanation:'Le texte précise que les horaires professionnels et les moments de repos peuvent se confondre.' }
 ];
 
+
+const CO_AUDIOS = [
+  {
+    code:'co-b1-dialogue-gare', level:'B1', title:'À la gare : acheter un billet', duration:35,
+    transcript:'Bonjour, je voudrais un billet pour Constantine, s’il vous plaît. Pour quel jour ? Pour demain matin. Il y a un train à sept heures vingt et un autre à neuf heures dix. Je préfère celui de neuf heures dix. Très bien. Le départ se fera voie trois. N’oubliez pas que les billets peuvent être échangés jusqu’à la veille du départ. Merci beaucoup. Je peux payer par carte ? Bien sûr.'
+  },
+  {
+    code:'co-b1-message-centre-sportif', level:'B1', title:'Message du centre sportif', duration:35,
+    transcript:'Bonjour à toutes et à tous. Le centre sportif vous informe que la piscine sera fermée exceptionnellement mercredi matin pour des travaux d’entretien. Les cours de natation prévus à neuf heures et à dix heures sont reportés à vendredi, aux mêmes horaires. La salle de musculation et les terrains resteront accessibles normalement. Pour toute question, adressez-vous à l’accueil. Merci de votre compréhension.'
+  },
+  {
+    code:'co-b2-interview-teletravail', level:'B2', title:'Interview : organiser le télétravail', duration:55,
+    transcript:'Journaliste : Depuis quelques années, le télétravail s’est installé dans de nombreuses entreprises. Est-ce forcément un avantage pour les salariés ? Experte : Pas automatiquement. Il réduit les déplacements et offre davantage de souplesse, mais il peut aussi isoler certains employés. Tout dépend de l’organisation collective. Les équipes ont besoin de moments d’échange réguliers et de règles claires concernant les horaires. Journaliste : Les entreprises doivent-elles donc imposer des jours au bureau ? Experte : Il n’existe pas de modèle unique. Certaines équipes gagnent à se retrouver deux jours par semaine, tandis que d’autres ont besoin de plus de présence. L’essentiel est de choisir les modalités avec les salariés et d’évaluer les résultats plutôt que de mesurer uniquement le temps passé au bureau.'
+  },
+  {
+    code:'co-b2-reportage-mobilite', level:'B2', title:'Reportage : un nouveau plan de mobilité', duration:45,
+    transcript:'Dans le centre-ville, la municipalité vient de présenter un nouveau plan de mobilité. Il prévoit la création de pistes cyclables continues, l’augmentation de la fréquence des bus et la transformation de deux rues commerçantes en zones piétonnes à certaines heures. Les commerçants redoutent une baisse de fréquentation pendant les travaux, mais la mairie promet des livraisons organisées tôt le matin et une période d’évaluation de six mois. Les associations d’usagers saluent l’initiative, tout en rappelant que ces mesures ne seront efficaces que si les quartiers périphériques bénéficient eux aussi de transports réguliers.'
+  }
+];
+
+const CO_QUESTIONS = [
+  { stableId:'co-b1-001', audio:'co-b1-dialogue-gare', level:'B1', chapter:'Repérer une information précise', prompt:'À quelle heure part le train choisi par le voyageur ?', options:['À 7 h 20.','À 8 h 30.','À 9 h 10.','À 10 h 15.'], answer:'À 9 h 10.', explanation:'Le voyageur choisit le train de neuf heures dix.' },
+  { stableId:'co-b1-002', audio:'co-b1-dialogue-gare', level:'B1', chapter:'Comprendre une condition', prompt:'Jusqu’à quand le billet peut-il être échangé ?', options:['Jusqu’au jour du départ.','Jusqu’à la veille du départ.','Pendant une semaine après le départ.','Uniquement dans l’heure qui suit l’achat.'], answer:'Jusqu’à la veille du départ.', explanation:'L’agent précise que l’échange est possible jusqu’à la veille du départ.' },
+  { stableId:'co-b1-003', audio:'co-b1-message-centre-sportif', level:'B1', chapter:'Comprendre un message d’information', prompt:'Pourquoi la piscine sera-t-elle fermée ?', options:['À cause d’une compétition.','Pour des travaux d’entretien.','En raison d’une panne générale.','Pour une réunion du personnel.'], answer:'Pour des travaux d’entretien.', explanation:'Le message annonce une fermeture exceptionnelle pour des travaux d’entretien.' },
+  { stableId:'co-b1-004', audio:'co-b1-message-centre-sportif', level:'B1', chapter:'Identifier un changement d’horaire', prompt:'Quand les cours de natation auront-ils lieu ?', options:['Mardi matin.','Mercredi après-midi.','Jeudi matin.','Vendredi aux mêmes horaires.'], answer:'Vendredi aux mêmes horaires.', explanation:'Les cours prévus mercredi sont reportés à vendredi, sans changement d’horaire.' },
+  { stableId:'co-b2-001', audio:'co-b2-interview-teletravail', level:'B2', chapter:'Comprendre le point de vue', prompt:'Quelle réserve l’experte exprime-t-elle au sujet du télétravail ?', options:['Il entraîne toujours une baisse de productivité.','Il peut isoler certains employés.','Il empêche toute souplesse des horaires.','Il rend les échanges entre collègues inutiles.'], answer:'Il peut isoler certains employés.', explanation:'L’experte reconnaît les avantages du télétravail, mais souligne le risque d’isolement.' },
+  { stableId:'co-b2-002', audio:'co-b2-interview-teletravail', level:'B2', chapter:'Saisir une recommandation', prompt:'Selon l’experte, sur quoi faut-il surtout fonder le choix des modalités ?', options:['Sur le nombre d’heures passées au bureau.','Sur une règle identique pour toutes les entreprises.','Sur un accord avec les salariés et l’évaluation des résultats.','Sur la suppression des réunions à distance.'], answer:'Sur un accord avec les salariés et l’évaluation des résultats.', explanation:'Elle recommande de choisir les modalités avec les salariés et d’évaluer les résultats.' },
+  { stableId:'co-b2-003', audio:'co-b2-reportage-mobilite', level:'B2', chapter:'Identifier les mesures annoncées', prompt:'Quelle mesure ne fait PAS partie du nouveau plan ?', options:['Créer des pistes cyclables continues.','Augmenter la fréquence des bus.','Rendre certaines rues piétonnes à certaines heures.','Supprimer toutes les lignes de bus périphériques.'], answer:'Supprimer toutes les lignes de bus périphériques.', explanation:'Le reportage annonce trois mesures, mais aucune suppression de lignes de bus.' },
+  { stableId:'co-b2-004', audio:'co-b2-reportage-mobilite', level:'B2', chapter:'Comprendre une condition', prompt:'À quelle condition les associations jugent-elles les mesures efficaces ?', options:['Si les commerces ferment pendant les travaux.','Si les quartiers périphériques disposent aussi de transports réguliers.','Si les livraisons sont interdites toute la journée.','Si la période d’évaluation est supprimée.'], answer:'Si les quartiers périphériques disposent aussi de transports réguliers.', explanation:'Les associations rappellent que les quartiers périphériques doivent également être bien desservis.' }
+];
+
 export class SeedService {
   constructor(database) { this.database = database; }
 
@@ -50,6 +81,7 @@ export class SeedService {
     await this.database.transaction(async (db) => {
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['GRAM', 'Grammaire']);
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['CE', 'Compréhension écrite']);
+      await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['CO', 'Compréhension orale']);
       await db.run(
         "INSERT OR IGNORE INTO packs (code, name, is_premium, description) VALUES (?, ?, 0, ?)",
         ['pack_free_discovery', 'Pack gratuit — Découverte B1-B2', 'Premiers exercices gratuits de grammaire et de compréhension écrite']
@@ -70,6 +102,10 @@ export class SeedService {
       await db.run(
         "INSERT OR IGNORE INTO pack_versions (pack_id, version_number, checksum) VALUES (?, 2, ?)",
         [packId, 'builtin-ce-b1-b2-v1']
+      );
+      await db.run(
+        "INSERT OR IGNORE INTO pack_versions (pack_id, version_number, checksum) VALUES (?, 3, ?)",
+        [packId, 'builtin-co-b1-b2-v1']
       );
 
       for (let index = 0; index < GRAMMAR_QUESTIONS.length; index += 1) {
@@ -108,6 +144,35 @@ export class SeedService {
              difficulte, shuffle_key, enonce, options_json, bonne_reponse, explication, is_archived)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
           [q.stableId, packId, moduleIds.CE, supportId, q.chapter, q.level,
+            q.level === 'B2' ? 4 : 2, (index + 1) * 100, q.prompt,
+            JSON.stringify(q.options), q.answer, q.explanation]
+        );
+      }
+
+      for (const audio of CO_AUDIOS) {
+        await db.run(
+          `INSERT OR IGNORE INTO fichiers_audio
+            (pack_id, stable_code, chemin_fichier, duree_secondes, transcription, is_archived)
+           VALUES (?, ?, ?, ?, ?, 0)`,
+          [packId, audio.code, 'tts://fr-FR/' + audio.code, audio.duration, audio.transcript]
+        );
+      }
+
+      const audioRows = await db.query(
+        "SELECT id, stable_code FROM fichiers_audio WHERE pack_id = ? AND stable_code LIKE 'co-%'",
+        [packId]
+      );
+      const audioIds = Object.fromEntries((audioRows.values ?? []).map(row => [row.stable_code, row.id]));
+      for (let index = 0; index < CO_QUESTIONS.length; index += 1) {
+        const q = CO_QUESTIONS[index];
+        const audioId = audioIds[q.audio];
+        if (!audioId) throw new Error('Audio de compréhension orale introuvable : ' + q.audio);
+        await db.run(
+          `INSERT OR IGNORE INTO exercices
+            (stable_id, pack_id, module_id, audio_id, chapitre, niveau,
+             difficulte, shuffle_key, enonce, options_json, bonne_reponse, explication, is_archived)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+          [q.stableId, packId, moduleIds.CO, audioId, q.chapter, q.level,
             q.level === 'B2' ? 4 : 2, (index + 1) * 100, q.prompt,
             JSON.stringify(q.options), q.answer, q.explanation]
         );
