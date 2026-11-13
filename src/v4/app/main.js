@@ -215,9 +215,11 @@ async function start() {
     updateScore();
 
     el.panel.hidden = false;
-    el.historyButton.addEventListener('click', showHistory);
+    // Les commandes d'interface sont attachées uniquement si leur élément existe.
+    // Cela évite qu'un ancien index.html en cache bloque toute l'initialisation.
+    if (el.historyButton) el.historyButton.addEventListener('click', showHistory);
     await loadBatch();
-    el.next.addEventListener('click', async () => {
+    if (el.next) el.next.addEventListener('click', async () => {
       if (index + 1 < batch.length) {
         index += 1;
         displayQuestion();
