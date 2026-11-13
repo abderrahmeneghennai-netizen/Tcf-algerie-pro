@@ -17,7 +17,10 @@ const el = {
   feedback: document.querySelector('#feedback'),
   next: document.querySelector('#nextButton'),
   progress: document.querySelector('#progressLabel'),
-  score: document.querySelector('#scoreLabel')
+  score: document.querySelector('#scoreLabel'),
+  historyButton: document.querySelector('#historyButton'),
+  historyPanel: document.querySelector('#historyPanel'),
+  historyList: document.querySelector('#historyList')
 };
 const exercises = new ExerciseService(sqliteDatabase);
 const progress = new ProgressService(sqliteDatabase);
@@ -114,6 +117,58 @@ async function submitAnswer(item, selected, selectedButton) {
   el.next.textContent = index + 1 < batch.length ? 'Question suivante' : 'Charger la suite';
   updateScore();
 }
+async function showHistory() {
+  el.historyButton.disabled = true;
+  el.historyButton.textContent = 'Chargement…';
+  try {
+    const entries = await progress.listHistory({ limit: 50, offset: 0 });
+    el.historyList.replaceChildren();
+    if (!entries.length) {
+      const empty = document.createElement('p');
+      empty.className = 'history-empty';
+      empty.textContent = 'Aucune réponse enregistrée pour le moment. Réalisez quelques exercices : vos tentatives apparaîtront ici.';
+      el.historyList.append(empty);
+    } else {
+      entries.forEach((entry) => {
+        let snapshot = {};
+        try { snapshot = JSON.parse(entry.question_snapshot_json || '{}'); } catch { /* instantané illisible */ }
+        const card = document.createElement('article');
+        card.className = 'history-entry';
+        const heading = document.createElement('div');
+        heading.className = 'history-entry-heading';
+        const title = document.createElement('h3');
+        title.textContent = snapshot.chapitre || 'Exercice de grammaire';
+        const result = document.createElement('span');
+        result.className = entry.est_correct ? 'history-result good' : 'history-result wrong';
+        result.textContent = entry.est_correct ? 'Correcte' : 'À revoir';
+        heading.append(title, result);
+        const question = document.createElement('p');
+        question.className = 'history-question';
+        question.textContent = snapshot.enonce || 'Énoncé non disponible';
+        const answer = document.createElement('p');
+        answer.textContent = 'Votre réponse : ' + (entry.reponse_donnee ?? 'Non renseignée');
+        const expected = document.createElement('p');
+        expected.textContent = 'Bonne réponse : ' + (snapshot.bonne_reponse ?? 'Non disponible');
+        const date = document.createElement('small');
+        const parsedDate = entry.date_tentative ? new Date(entry.date_tentative.replace(' ', 'T') + 'Z') : null;
+        date.textContent = parsedDate && !Number.isNaN(parsedDate.getTime())
+          ? 'Tentative du ' + parsedDate.toLocaleString('fr-FR')
+          : 'Date non disponible';
+        card.append(heading, question, answer, expected, date);
+        el.historyList.append(card);
+      });
+    }
+    el.historyPanel.hidden = false;
+    el.historyPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.historyButton.textContent = 'Actualiser mon historique';
+  } catch (error) {
+    console.error('[TCF V4.0] Historique impossible à charger', error);
+    el.historyButton.textContent = 'Réessayer';
+    status('error', 'Historique indisponible', 'Les réponses enregistrées ne peuvent pas être affichées.', String(error?.message || error));
+  } finally {
+    el.historyButton.disabled = false;
+  }
+}
 async function loadBatch() {
   batch = await exercises.getNextBatch({
     moduleId,
@@ -160,6 +215,7 @@ async function start() {
     updateScore();
 
     el.panel.hidden = false;
+    el.historyButton.addEventListener('click', showHistory);
     await loadBatch();
     el.next.addEventListener('click', async () => {
       if (index + 1 < batch.length) {
