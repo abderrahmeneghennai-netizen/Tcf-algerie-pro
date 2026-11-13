@@ -29,6 +29,9 @@ jobs:
       - name: Installer les dependances
         run: npm install
 
+      - name: Construire l'interface V4.0
+        run: npm run build
+
       - name: Ajouter Android
         run: npx cap add android
 
