@@ -74,6 +74,16 @@ const CO_QUESTIONS = [
   { stableId:'co-b2-004', audio:'co-b2-reportage-mobilite', level:'B2', chapter:'Comprendre une condition', prompt:'À quelle condition les associations jugent-elles les mesures efficaces ?', options:['Si les commerces ferment pendant les travaux.','Si les quartiers périphériques disposent aussi de transports réguliers.','Si les livraisons sont interdites toute la journée.','Si la période d’évaluation est supprimée.'], answer:'Si les quartiers périphériques disposent aussi de transports réguliers.', explanation:'Les associations rappellent que les quartiers périphériques doivent également être bien desservis.' }
 ];
 
+
+const EO_SUBJECTS = [
+  { code:'eo-b1-tache1-presentation', level:'B1', minutes:2, task:'Tâche 1 — Entretien dirigé', prompt:'Présentez-vous : parlez de votre parcours, de vos activités quotidiennes, de vos centres d’intérêt et de vos projets.', words:'Réponse orale personnelle', rubric:{fluidite:'Parler de façon suivie', lexique:'Employer un vocabulaire précis', grammaire:'Construire des phrases correctes', coherence:'Organiser les informations'} },
+  { code:'eo-b1-tache2-renseignements', level:'B1', minutes:3, task:'Tâche 2 — Interaction', prompt:'Vous souhaitez vous inscrire à une activité culturelle dans votre ville. Posez des questions sur les horaires, le prix, les conditions d’inscription et le matériel nécessaire.', words:'Questions et relances', rubric:{interaction:'Poser des questions pertinentes', politesse:'Employer des formules adaptées', lexique:'Utiliser le vocabulaire du sujet', correction:'Construire des questions correctes'} },
+  { code:'eo-b1-tache3-opinion', level:'B1', minutes:4, task:'Tâche 3 — Expression d’un point de vue', prompt:'Pensez-vous que les transports en commun devraient être moins chers pour les étudiants ? Donnez votre avis et justifiez-le avec des exemples.', words:'Avis argumenté', rubric:{opinion:'Exprimer clairement son avis', arguments:'Développer deux arguments', exemples:'Illustrer avec des exemples', coherence:'Utiliser des connecteurs'} },
+  { code:'eo-b2-tache1-parcours', level:'B2', minutes:2, task:'Tâche 1 — Présentation approfondie', prompt:'Présentez votre parcours et expliquez une expérience qui a contribué à votre évolution personnelle ou professionnelle.', words:'Présentation structurée', rubric:{fluidite:'Maintenir un discours fluide', lexique:'Varier le vocabulaire', grammaire:'Maîtriser des structures variées', coherence:'Structurer le récit'} },
+  { code:'eo-b2-tache2-situation', level:'B2', minutes:4, task:'Tâche 2 — Interaction et négociation', prompt:'Votre association souhaite organiser un événement écologique. Échangez avec un responsable pour proposer des idées, demander des précisions et trouver un accord sur l’organisation.', words:'Échange argumenté', rubric:{interaction:'Réagir et relancer', argumentation:'Défendre des propositions', lexique:'Employer un vocabulaire précis', correction:'S’exprimer avec précision'} },
+  { code:'eo-b2-tache3-debat', level:'B2', minutes:5, task:'Tâche 3 — Argumentation', prompt:'Le développement du numérique améliore-t-il toujours la qualité de l’éducation ? Présentez une réflexion organisée, avec des arguments, des exemples et une conclusion.', words:'Argumentation organisée', rubric:{these:'Présenter une position nuancée', arguments:'Développer des arguments', exemples:'Illustrer les idées', coherence:'Construire un discours structuré'} }
+];
+
 export class SeedService {
   constructor(database) { this.database = database; }
 
@@ -82,16 +92,17 @@ export class SeedService {
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['GRAM', 'Grammaire']);
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['CE', 'Compréhension écrite']);
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['CO', 'Compréhension orale']);
+      await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['EO', 'Expression orale']);
       await db.run(
         "INSERT OR IGNORE INTO packs (code, name, is_premium, description) VALUES (?, ?, 0, ?)",
         ['pack_free_discovery', 'Pack gratuit — Découverte B1-B2', 'Premiers exercices gratuits de grammaire et de compréhension écrite']
       );
 
-      const moduleRows = await db.query("SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO')");
+      const moduleRows = await db.query("SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO')");
       const packResult = await db.query("SELECT id FROM packs WHERE code = ? LIMIT 1", ['pack_free_discovery']);
       const moduleIds = Object.fromEntries((moduleRows.values ?? []).map(row => [row.code, row.id]));
       const packId = packResult.values?.[0]?.id;
-      if (!moduleIds.GRAM || !moduleIds.CE || !packId) {
+      if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO || !moduleIds.EO || !packId) {
         throw new Error('Impossible de préparer les modules gratuits.');
       }
 
@@ -175,6 +186,17 @@ export class SeedService {
           [q.stableId, packId, moduleIds.CO, audioId, q.chapter, q.level,
             q.level === 'B2' ? 4 : 2, (index + 1) * 100, q.prompt,
             JSON.stringify(q.options), q.answer, q.explanation]
+        );
+      }
+
+      for (const subject of EO_SUBJECTS) {
+        await db.run(
+          `INSERT OR IGNORE INTO sujets_expression
+            (pack_id, stable_code, module_id, niveau, consigne, duree_minutes,
+             nb_mots_attendu, grille_evaluation_json, is_archived)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+          [packId, subject.code, moduleIds.EO, subject.level, subject.prompt,
+            subject.minutes, subject.words, JSON.stringify(subject.rubric)]
         );
       }
     });
