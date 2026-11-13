@@ -45,6 +45,9 @@ const el = {
   oralSelfAssessment: document.querySelector('#oralSelfAssessment'),
   oralSave: document.querySelector('#oralSaveButton'),
   oralSaveStatus: document.querySelector('#oralSaveStatus'),
+  oralProductionsToggle: document.querySelector('#oralProductionsToggle'),
+  oralProductionsPanel: document.querySelector('#oralProductionsPanel'),
+  oralProductionsList: document.querySelector('#oralProductionsList'),
   questionCard: document.querySelector('.question-card'),
   progressLine: document.querySelector('.progress-line'),
   b1Button: document.querySelector('#b1LevelButton'),
@@ -522,6 +525,76 @@ async function saveOralProduction() {
   }
 }
 
+async function loadOralProductions() {
+  const productions = await oralService.listProductions(100);
+  el.oralProductionsList.replaceChildren();
+  if (!productions.length) {
+    const empty = document.createElement('p');
+    empty.className = 'history-empty';
+    empty.textContent = 'Aucune production orale sauvegardée pour le moment.';
+    el.oralProductionsList.append(empty);
+    return;
+  }
+  for (const production of productions) {
+    const card = document.createElement('article');
+    card.className = 'history-entry';
+    const heading = document.createElement('div');
+    heading.className = 'history-entry-heading';
+    const title = document.createElement('h3');
+    title.textContent = production.sujet_code + ' · Niveau ' + production.niveau;
+    const date = document.createElement('small');
+    date.textContent = production.date_production || 'Date non disponible';
+    heading.append(title, date);
+    const prompt = document.createElement('p');
+    prompt.className = 'history-question';
+    prompt.textContent = production.consigne_originale;
+    const answer = document.createElement('p');
+    answer.textContent = production.contenu_texte || 'Aucun texte enregistré.';
+    card.append(heading, prompt, answer);
+    if (production.autoevaluation_note) {
+      const assessment = document.createElement('small');
+      assessment.textContent = 'Autoévaluation : ' + production.autoevaluation_note;
+      card.append(assessment);
+    }
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'secondary-button oral-production-delete';
+    remove.textContent = 'Supprimer cette production';
+    remove.addEventListener('click', async () => {
+      if (!window.confirm('Supprimer définitivement cette production de cet appareil ?')) return;
+      remove.disabled = true;
+      try {
+        await oralService.deleteProduction(production.id);
+        await loadOralProductions();
+      } catch (error) {
+        remove.disabled = false;
+        el.oralSaveStatus.textContent = 'Suppression impossible : ' + String(error?.message || error);
+      }
+    });
+    card.append(remove);
+    el.oralProductionsList.append(card);
+  }
+}
+
+async function toggleOralProductions() {
+  const opening = el.oralProductionsPanel.hidden;
+  if (opening) {
+    el.oralProductionsPanel.hidden = false;
+    el.oralProductionsToggle.textContent = 'Masquer mes productions';
+    el.oralProductionsToggle.disabled = true;
+    try {
+      await loadOralProductions();
+    } catch (error) {
+      el.oralProductionsList.textContent = 'Impossible de charger les productions : ' + String(error?.message || error);
+    } finally {
+      el.oralProductionsToggle.disabled = false;
+    }
+  } else {
+    el.oralProductionsPanel.hidden = true;
+    el.oralProductionsToggle.textContent = 'Mes productions sauvegardées';
+  }
+}
+
 async function openOralModule() {
   el.oralPanel.hidden = false;
   el.questionCard.hidden = true;
@@ -655,6 +728,7 @@ async function start() {
     if (el.oralSpeech) el.oralSpeech.addEventListener('click', startOralTranscription);
     if (el.oralSpeechStop) el.oralSpeechStop.addEventListener('click', stopOralTranscription);
     if (el.oralSave) el.oralSave.addEventListener('click', saveOralProduction);
+    if (el.oralProductionsToggle) el.oralProductionsToggle.addEventListener('click', toggleOralProductions);
     if (el.audioPlay) el.audioPlay.addEventListener('click', playAudio);
     if (el.audioStop) el.audioStop.addEventListener('click', stopAudio);
     if (el.transcriptionButton) el.transcriptionButton.addEventListener('click', () => {
