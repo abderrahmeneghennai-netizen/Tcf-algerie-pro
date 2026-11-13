@@ -6,6 +6,7 @@ import { ProgressService } from '../services/ProgressService.js';
 import { SeedService } from '../services/SeedService.js';
 import { ContentService } from '../services/ContentService.js';
 import { ExpressionOraleService } from '../services/ExpressionOraleService.js';
+import { ExpressionEcriteService } from '../services/ExpressionEcriteService.js';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 
 const el = {
@@ -30,6 +31,21 @@ const el = {
   ceButton: document.querySelector('#ceModuleButton'),
   coButton: document.querySelector('#coModuleButton'),
   eoButton: document.querySelector('#eoModuleButton'),
+  eeButton: document.querySelector('#eeModuleButton'),
+  writingPanel: document.querySelector('#writingPanel'),
+  writingSubject: document.querySelector('#writingSubjectSelect'),
+  writingTaskLabel: document.querySelector('#writingTaskLabel'),
+  writingPrompt: document.querySelector('#writingPrompt'),
+  writingGuidance: document.querySelector('#writingGuidance'),
+  writingAnswer: document.querySelector('#writingAnswer'),
+  writingWordCount: document.querySelector('#writingWordCount'),
+  writingWordHint: document.querySelector('#writingWordHint'),
+  writingSelfAssessment: document.querySelector('#writingSelfAssessment'),
+  writingSave: document.querySelector('#writingSaveButton'),
+  writingSaveStatus: document.querySelector('#writingSaveStatus'),
+  writingProductionsToggle: document.querySelector('#writingProductionsToggle'),
+  writingProductionsPanel: document.querySelector('#writingProductionsPanel'),
+  writingProductionsList: document.querySelector('#writingProductionsList'),
   oralPanel: document.querySelector('#oralPanel'),
   oralSubject: document.querySelector('#oralSubjectSelect'),
   oralDuration: document.querySelector('#oralDuration'),
@@ -67,6 +83,7 @@ const exercises = new ExerciseService(sqliteDatabase);
 const progress = new ProgressService(sqliteDatabase);
 const content = new ContentService(sqliteDatabase);
 const oralService = new ExpressionOraleService(sqliteDatabase);
+const writingService = new ExpressionEcriteService(sqliteDatabase);
 const moduleIds = {};
 let activeModule = 'GRAM';
 let activeLevel = 'B1';
@@ -80,6 +97,8 @@ let startedAt = 0;
 let currentAudio = null;
 let oralSubjects = [];
 let currentOralSubject = null;
+let writingSubjects = [];
+let currentWritingSubject = null;
 let mediaRecorder = null;
 let mediaStream = null;
 let recordedChunks = [];
@@ -679,6 +698,228 @@ async function toggleOralProductions() {
   }
 }
 
+function countWritingWords(value) {
+  const text = String(value ?? '').trim();
+  return text ? text.split(/\\s+/u).filter(Boolean).length : 0;
+}
+
+function updateWritingWordCount() {
+  const count = countWritingWords(el.writingAnswer.value);
+  const subject = currentWritingSubject;
+  el.writingWordCount.textContent = count + (count > 1 ? ' mots' : ' mot');
+  if (subject) {
+    const range = String(subject.nb_mots_attendu || '').match(/(\\d+)\\s*-\\s*(\\d+)/);
+    el.writingWordHint.textContent = range
+      ? 'Repère indicatif : ' + range[1] + ' à ' + range[2] + ' mots'
+      : 'Repère indicatif de longueur';
+  }
+}
+
+async function loadWritingSubjects() {
+  writingSubjects = await writingService.listSubjects(activeLevel);
+  el.writingSubject.replaceChildren();
+  if (!writingSubjects.length) {
+    currentWritingSubject = null;
+    el.writingPrompt.textContent = 'Aucun sujet gratuit disponible pour ce niveau.';
+    el.writingGuidance.textContent = '';
+    el.writingSave.disabled = true;
+    return;
+  }
+  writingSubjects.forEach((subject, index) => {
+    const option = document.createElement('option');
+    option.value = String(subject.id);
+    const task = subject.stable_code.match(/tache(\\d+)/i);
+    option.textContent = 'Tâche ' + (task?.[1] || index + 1) + ' — ' + subject.stable_code.split('-').slice(3).join(' ');
+    el.writingSubject.append(option);
+  });
+  el.writingSubject.value = String(writingSubjects[0].id);
+  displayWritingSubject();
+  el.writingSave.disabled = false;
+}
+
+function displayWritingSubject() {
+  const subject = writingSubjects.find((item) => String(item.id) === el.writingSubject.value);
+  if (!subject) return;
+  currentWritingSubject = subject;
+  const task = subject.stable_code.match(/tache(\\d+)/i);
+  el.writingTaskLabel.textContent = 'Tâche ' + (task?.[1] || '—');
+  el.writingPrompt.textContent = subject.consigne;
+  el.writingGuidance.textContent = 'Niveau ' + subject.niveau + ' · ' + (subject.nb_mots_attendu || 'Longueur libre') + ' · Le compteur est indicatif.';
+  el.writingAnswer.value = '';
+  el.writingSelfAssessment.value = '';
+  el.writingSaveStatus.textContent = '';
+  updateWritingWordCount();
+}
+
+async function saveWritingProduction() {
+  el.writingSave.disabled = true;
+  el.writingSaveStatus.textContent = 'Sauvegarde de votre texte dans SQLite…';
+  try {
+    await writingService.saveProduction({
+      subject: currentWritingSubject,
+      text: el.writingAnswer.value,
+      selfAssessment: el.writingSelfAssessment.value
+    });
+    el.writingSaveStatus.textContent = 'Votre production écrite est sauvegardée sur cet appareil.';
+    if (!el.writingProductionsPanel.hidden) await loadWritingProductions();
+  } catch (error) {
+    el.writingSaveStatus.textContent = String(error?.message || error);
+  } finally {
+    el.writingSave.disabled = false;
+  }
+}
+
+async function loadWritingProductions() {
+  const productions = await writingService.listProductions(100);
+  el.writingProductionsList.replaceChildren();
+  if (!productions.length) {
+    const empty = document.createElement('p');
+    empty.className = 'history-empty';
+    empty.textContent = 'Aucune production écrite sauvegardée pour le moment.';
+    el.writingProductionsList.append(empty);
+    return;
+  }
+  const groups = new Map();
+  for (const production of productions) {
+    const key = production.sujet_code || 'Sujet sans code';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(production);
+  }
+  for (const [subjectCode, entries] of groups) {
+    const group = document.createElement('section');
+    group.className = 'oral-production-group';
+    const groupTitle = document.createElement('h4');
+    groupTitle.textContent = subjectCode.replaceAll('-', ' ') + ' · ' + entries.length + ' production(s)';
+    group.append(groupTitle);
+    for (const production of entries) {
+      const card = document.createElement('article');
+      card.className = 'history-entry';
+      const heading = document.createElement('div');
+      heading.className = 'history-entry-heading';
+      const title = document.createElement('h3');
+      title.textContent = 'Niveau ' + production.niveau;
+      const date = document.createElement('small');
+      date.textContent = formatProductionDate(production.date_production);
+      heading.append(title, date);
+      const prompt = document.createElement('p');
+      prompt.className = 'history-question';
+      prompt.textContent = production.consigne_originale;
+      const answer = document.createElement('p');
+      answer.className = 'oral-production-answer';
+      answer.textContent = production.contenu_texte || 'Aucun texte enregistré.';
+      const assessment = document.createElement('small');
+      assessment.textContent = 'Autoévaluation : ' + (production.autoevaluation_note || 'Non renseignée');
+      card.append(heading, prompt, answer, assessment);
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'secondary-button';
+      edit.textContent = 'Modifier cette production';
+      edit.addEventListener('click', () => {
+        if (card.querySelector('.writing-production-editor')) return;
+        const editor = document.createElement('div');
+        editor.className = 'oral-production-editor writing-production-editor';
+        const textarea = document.createElement('textarea');
+        textarea.className = 'writing-answer';
+        textarea.rows = 8;
+        textarea.value = production.contenu_texte || '';
+        const count = document.createElement('small');
+        const refreshCount = () => { count.textContent = countWritingWords(textarea.value) + ' mots'; };
+        textarea.addEventListener('input', refreshCount);
+        refreshCount();
+        const assessmentSelect = document.createElement('select');
+        assessmentSelect.className = 'oral-select';
+        [['','Choisir une appréciation'],['À retravailler','Je dois encore m’entraîner'],['Satisfaisant','Réponse satisfaisante'],['Très satisfaisant','Réponse très satisfaisante']].forEach(([value,label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          assessmentSelect.append(option);
+        });
+        assessmentSelect.value = production.autoevaluation_note || '';
+        const actions = document.createElement('div');
+        actions.className = 'oral-actions';
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = 'primary-button';
+        save.textContent = 'Enregistrer les modifications';
+        save.addEventListener('click', async () => {
+          save.disabled = true;
+          try {
+            await writingService.updateProduction(production.id, textarea.value, assessmentSelect.value);
+            await loadWritingProductions();
+          } catch (error) {
+            count.textContent = String(error?.message || error);
+            save.disabled = false;
+          }
+        });
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'secondary-button';
+        cancel.textContent = 'Annuler';
+        cancel.addEventListener('click', () => editor.remove());
+        actions.append(save, cancel);
+        editor.append(textarea, count, assessmentSelect, actions);
+        card.append(editor);
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'secondary-button oral-production-delete';
+      remove.textContent = 'Supprimer cette production';
+      remove.addEventListener('click', async () => {
+        if (!window.confirm('Supprimer définitivement cette production écrite sauvegardée ?')) return;
+        remove.disabled = true;
+        try {
+          await writingService.deleteProduction(production.id);
+          await loadWritingProductions();
+        } catch (error) {
+          remove.disabled = false;
+          window.alert('Suppression impossible : ' + String(error?.message || error));
+        }
+      });
+      card.append(edit, remove);
+      group.append(card);
+    }
+    el.writingProductionsList.append(group);
+  }
+}
+
+async function toggleWritingProductions() {
+  const opening = el.writingProductionsPanel.hidden;
+  if (opening) {
+    el.writingProductionsPanel.hidden = false;
+    el.writingProductionsToggle.textContent = 'Masquer mes productions écrites';
+    el.writingProductionsToggle.disabled = true;
+    try {
+      await loadWritingProductions();
+    } catch (error) {
+      el.writingProductionsList.textContent = 'Impossible de charger les productions : ' + String(error?.message || error);
+    } finally {
+      el.writingProductionsToggle.disabled = false;
+    }
+  } else {
+    el.writingProductionsPanel.hidden = true;
+    el.writingProductionsToggle.textContent = 'Mes productions écrites sauvegardées';
+  }
+}
+
+async function openWritingModule() {
+  closeOralModule();
+  el.writingPanel.hidden = false;
+  el.questionCard.hidden = true;
+  el.progressLine.hidden = true;
+  el.historyButton.hidden = true;
+  el.historyPanel.hidden = true;
+  el.readingSupport.hidden = true;
+  el.audioSupport.hidden = true;
+  await loadWritingSubjects();
+  status('success', 'Expression écrite disponible',
+    'Choisissez une tâche, rédigez votre texte et sauvegardez-le sur cet appareil.',
+    writingSubjects.length + ' sujet(s) gratuit(s) au niveau ' + activeLevel + '.');
+}
+
+function closeWritingModule() {
+  if (el.writingPanel) el.writingPanel.hidden = true;
+}
+
 async function openOralModule() {
   el.oralPanel.hidden = false;
   el.questionCard.hidden = true;
@@ -726,13 +967,14 @@ async function refreshModuleStats() {
   updateScore();
 }
 function updateTrainingControls() {
-  const names = { GRAM:'Grammaire', CE:'Compréhension écrite', CO:'Compréhension orale', EO:'Expression orale' };
+  const names = { GRAM:'Grammaire', CE:'Compréhension écrite', CO:'Compréhension orale', EO:'Expression orale', EE:'Expression écrite' };
   el.exerciseTitle.textContent = (names[activeModule] || 'Entraînement') + ' — niveau ' + activeLevel;
   el.levelChip.textContent = activeLevel;
   el.grammarButton?.classList.toggle('selected', activeModule === 'GRAM');
   el.ceButton?.classList.toggle('selected', activeModule === 'CE');
   el.coButton?.classList.toggle('selected', activeModule === 'CO');
   el.eoButton?.classList.toggle('selected', activeModule === 'EO');
+  el.eeButton?.classList.toggle('selected', activeModule === 'EE');
   el.b1Button?.classList.toggle('selected', activeLevel === 'B1');
   el.b2Button?.classList.toggle('selected', activeLevel === 'B2');
 }
@@ -788,10 +1030,10 @@ async function start() {
 
     await new SeedService(sqliteDatabase).ensureInitialContent();
     const moduleResult = await sqliteDatabase.query(
-      "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO') AND is_active = 1"
+      "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO', 'EE') AND is_active = 1"
     );
     for (const row of (moduleResult.values ?? [])) moduleIds[row.code] = row.id;
-    if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO || !moduleIds.EO) throw new Error('Un des modules de formation n’est pas initialisé.');
+    if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO || !moduleIds.EO || !moduleIds.EE) throw new Error('Un des modules de formation n’est pas initialisé.');
     moduleId = moduleIds.GRAM;
     activeModule = 'GRAM';
     activeLevel = 'B1';
@@ -805,7 +1047,7 @@ async function start() {
     if (el.grammarButton) el.grammarButton.addEventListener('click', () => chooseModule('GRAM').catch(handleModuleError));
     if (el.ceButton) el.ceButton.addEventListener('click', () => chooseModule('CE').catch(handleModuleError));
     if (el.coButton) el.coButton.addEventListener('click', () => chooseModule('CO').catch(handleModuleError));
-    if (el.eoButton) el.eoButton.addEventListener('click', () => chooseModule('EO').catch(handleModuleError));
+    if (el.eoButton) el.eoButton.addEventListener('click', () => chooseModule('EO').catch(handleModuleError));\n    if (el.eeButton) el.eeButton.addEventListener('click', () => chooseModule('EE').catch(handleModuleError));\n    if (el.writingSubject) el.writingSubject.addEventListener('change', displayWritingSubject);\n    if (el.writingAnswer) el.writingAnswer.addEventListener('input', updateWritingWordCount);\n    if (el.writingSave) el.writingSave.addEventListener('click', saveWritingProduction);\n    if (el.writingProductionsToggle) el.writingProductionsToggle.addEventListener('click', toggleWritingProductions);
     if (el.oralSubject) el.oralSubject.addEventListener('change', displayOralSubject);
     if (el.oralRecord) el.oralRecord.addEventListener('click', startOralRecording);
     if (el.oralStop) el.oralStop.addEventListener('click', stopOralRecording);
@@ -835,7 +1077,7 @@ async function start() {
       }
     });
     status('success', 'Exercices disponibles',
-      'Grammaire, Compréhension écrite et orale B1-B2, ainsi que l’Expression orale B1-B2, sont disponibles hors ligne.',
+      'Grammaire, compréhension écrite et orale, expression écrite et orale B1-B2 sont disponibles hors ligne.',
       count + ' tables vérifiées · ' + batch.length + ' questions chargées.');
   } catch (error) {
     console.error('[TCF V4.0] Initialisation impossible', error);
