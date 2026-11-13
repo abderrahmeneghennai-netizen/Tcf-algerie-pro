@@ -70,6 +70,27 @@
       <p class="pathways-note">Identités graphiques validées · contenus des parcours à développer progressivement</p>
     </section>
 
+    <section class="modules" aria-labelledby="modulesTitle">
+      <h2 id="modulesTitle">Choisissez votre compétence</h2>
+      <div class="module-grid">
+        <button class="module-card module-co" id="moduleCardCO" data-module="CO" type="button" aria-label="Ouvrir la compréhension orale">
+          <span class="module-icon" aria-hidden="true">CO</span><span>Compréhension orale</span><small>ÉCOUTER · B1-B2</small>
+        </button>
+        <button class="module-card module-ce" id="moduleCardCE" data-module="CE" type="button" aria-label="Ouvrir la compréhension écrite">
+          <span class="module-icon" aria-hidden="true">CE</span><span>Compréhension écrite</span><small>LIRE · B1-B2</small>
+        </button>
+        <button class="module-card module-ee" id="moduleCardEE" data-module="EE" type="button" aria-label="Ouvrir l’expression écrite">
+          <span class="module-icon" aria-hidden="true">EE</span><span>Expression écrite</span><small>ÉCRIRE</small>
+        </button>
+        <button class="module-card module-eo" id="moduleCardEO" data-module="EO" type="button" aria-label="Ouvrir l’expression orale">
+          <span class="module-icon" aria-hidden="true">EO</span><span>Expression orale</span><small>PARLER</small>
+        </button>
+        <button class="module-card module-gram" id="moduleCardGRAM" data-module="GRAM" type="button" aria-label="Ouvrir la grammaire">
+          <span class="module-icon" aria-hidden="true">G</span><span>Grammaire</span><small>GRAMMAIRE · B1-B2</small>
+        </button>
+      </div>
+    </section>
+
     <section class="status-card" aria-live="polite">
       <div class="status-heading"><span class="status-dot" id="statusDot"></span><h2 id="statusTitle">Initialisation en cours…</h2></div>
       <p id="statusMessage">Préparation de la base SQLite locale.</p>
@@ -84,15 +105,7 @@
         </div>
         <span class="level-chip" id="levelChip">B1</span>
       </div>
-      <div class="training-controls" aria-label="Choisir un module et un niveau">
-        <div class="control-group">
-          <span class="control-label">Compétence</span>
-          <button class="choice-button selected" id="grammarModuleButton" type="button">Grammaire</button>
-          <button class="choice-button" id="ceModuleButton" type="button">Compréhension écrite</button>
-          <button class="choice-button" id="coModuleButton" type="button">Compréhension orale</button>
-          <button class="choice-button" id="eoModuleButton" type="button">Expression orale</button>
-          <button class="choice-button" id="eeModuleButton" type="button">Expression écrite</button>
-        </div>
+      <div class="training-controls" aria-label="Choisir un niveau">
         <div class="control-group">
           <span class="control-label">Niveau</span>
           <button class="choice-button selected" id="b1LevelButton" type="button">B1</button>
@@ -234,16 +247,7 @@
       </section>
     </section>
 
-    <section class="modules">
-      <h2>Les compétences TCF</h2>
-      <div class="module-grid">
-        <article class="module-card module-co active-module"><span class="module-icon" aria-hidden="true">CO</span>Compréhension orale <small>ÉCOUTER · B1-B2</small></article>
-        <article class="module-card module-ce active-module"><span class="module-icon" aria-hidden="true">CE</span>Compréhension écrite <small>LIRE · B1-B2</small></article>
-        <article class="module-card module-ee active-module"><span class="module-icon" aria-hidden="true">EE</span>Expression écrite <small>ÉCRIRE</small></article>
-        <article class="module-card module-eo active-module"><span class="module-icon" aria-hidden="true">EO</span>Expression orale <small>PARLER</small></article>
-        <article class="module-card module-gram active-module"><span class="module-icon" aria-hidden="true">G</span>Grammaire <small>GRAMMAIRE · B1</small></article>
-      </div>
-    </section>
+
     <footer>TCF ALGÉRIE PRO V4.0 · Application indépendante de préparation</footer>
   </main>
   <script type="module" src="/main.js"></script>
