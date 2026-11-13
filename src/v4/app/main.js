@@ -96,6 +96,15 @@ function status(kind, heading, detail, diagnostic = '') {
 function normalize(value) {
   return String(value ?? '').trim().toLocaleLowerCase('fr');
 }
+
+function formatProductionDate(value) {
+  if (!value) return 'Date non disponible';
+  const normalized = String(value).includes('T') ? String(value) : String(value).replace(' ', 'T') + 'Z';
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime())
+    ? String(value)
+    : date.toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' });
+}
 function updateScore() {
   el.score.textContent = correct + ' bonne(s) réponse(s) sur ' + attempted;
 }
@@ -535,47 +544,122 @@ async function loadOralProductions() {
     el.oralProductionsList.append(empty);
     return;
   }
+
+  const groups = new Map();
   for (const production of productions) {
-    const card = document.createElement('article');
-    card.className = 'history-entry';
-    const heading = document.createElement('div');
-    heading.className = 'history-entry-heading';
-    const title = document.createElement('h3');
-    title.textContent = production.sujet_code + ' · Niveau ' + production.niveau;
-    const date = document.createElement('small');
-    date.textContent = production.date_production || 'Date non disponible';
-    heading.append(title, date);
-    const prompt = document.createElement('p');
-    prompt.className = 'history-question';
-    prompt.textContent = production.consigne_originale;
-    const answer = document.createElement('p');
-    answer.textContent = production.contenu_texte || 'Aucun texte enregistré.';
-    card.append(heading, prompt, answer);
-    if (production.autoevaluation_note) {
+    const key = production.sujet_code || 'Sujet sans code';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(production);
+  }
+
+  for (const [subjectCode, entries] of groups) {
+    const group = document.createElement('section');
+    group.className = 'oral-production-group';
+    const groupTitle = document.createElement('h4');
+    groupTitle.textContent = subjectCode + ' · ' + entries.length + ' production(s)';
+    group.append(groupTitle);
+
+    for (const production of entries) {
+      const card = document.createElement('article');
+      card.className = 'history-entry';
+      const heading = document.createElement('div');
+      heading.className = 'history-entry-heading';
+      const title = document.createElement('h3');
+      title.textContent = 'Niveau ' + production.niveau;
+      const date = document.createElement('small');
+      date.textContent = formatProductionDate(production.date_production);
+      heading.append(title, date);
+
+      const prompt = document.createElement('p');
+      prompt.className = 'history-question';
+      prompt.textContent = production.consigne_originale;
+      const answer = document.createElement('p');
+      answer.className = 'oral-production-answer';
+      answer.textContent = production.contenu_texte || 'Aucun texte enregistré.';
+      card.append(heading, prompt, answer);
+
       const assessment = document.createElement('small');
-      assessment.textContent = 'Autoévaluation : ' + production.autoevaluation_note;
+      assessment.textContent = 'Autoévaluation : ' + (production.autoevaluation_note || 'Non renseignée');
       card.append(assessment);
+
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'secondary-button';
+      edit.textContent = 'Modifier cette production';
+      edit.addEventListener('click', () => {
+        if (card.querySelector('.oral-production-editor')) return;
+        const editor = document.createElement('div');
+        editor.className = 'oral-production-editor';
+        const textarea = document.createElement('textarea');
+        textarea.className = 'oral-select';
+        textarea.rows = 5;
+        textarea.value = production.contenu_texte || '';
+        textarea.setAttribute('aria-label', 'Modifier la transcription');
+        const assessmentSelect = document.createElement('select');
+        assessmentSelect.className = 'oral-select';
+        [
+          ['', 'Choisir une appréciation'],
+          ['À retravailler', 'Je dois encore m’entraîner'],
+          ['Satisfaisant', 'Réponse satisfaisante'],
+          ['Très satisfaisant', 'Réponse très satisfaisante']
+        ].forEach(([value, label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          assessmentSelect.append(option);
+        });
+        assessmentSelect.value = production.autoevaluation_note || '';
+        const actions = document.createElement('div');
+        actions.className = 'oral-actions';
+        const save = document.createElement('button');
+        save.type = 'button';
+        save.className = 'primary-button';
+        save.textContent = 'Enregistrer les modifications';
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'secondary-button';
+        cancel.textContent = 'Annuler';
+        cancel.addEventListener('click', () => editor.remove());
+        save.addEventListener('click', async () => {
+          save.disabled = true;
+          try {
+            await oralService.updateProduction(production.id, textarea.value, assessmentSelect.value);
+            await loadOralProductions();
+          } catch (error) {
+            save.disabled = false;
+            editorError.textContent = 'Modification impossible : ' + String(error?.message || error);
+          }
+        });
+        const editorError = document.createElement('p');
+        editorError.className = 'oral-save-status';
+        actions.append(save, cancel);
+        editor.append(textarea, assessmentSelect, actions, editorError);
+        card.append(editor);
+        textarea.focus();
+      });
+      card.append(edit);
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'secondary-button oral-production-delete';
+      remove.textContent = 'Supprimer cette production';
+      remove.addEventListener('click', async () => {
+        if (!window.confirm('Supprimer définitivement cette production de cet appareil ?')) return;
+        remove.disabled = true;
+        try {
+          await oralService.deleteProduction(production.id);
+          await loadOralProductions();
+        } catch (error) {
+          remove.disabled = false;
+          el.oralSaveStatus.textContent = 'Suppression impossible : ' + String(error?.message || error);
+        }
+      });
+      card.append(remove);
+      group.append(card);
     }
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'secondary-button oral-production-delete';
-    remove.textContent = 'Supprimer cette production';
-    remove.addEventListener('click', async () => {
-      if (!window.confirm('Supprimer définitivement cette production de cet appareil ?')) return;
-      remove.disabled = true;
-      try {
-        await oralService.deleteProduction(production.id);
-        await loadOralProductions();
-      } catch (error) {
-        remove.disabled = false;
-        el.oralSaveStatus.textContent = 'Suppression impossible : ' + String(error?.message || error);
-      }
-    });
-    card.append(remove);
-    el.oralProductionsList.append(card);
+    el.oralProductionsList.append(group);
   }
 }
-
 async function toggleOralProductions() {
   const opening = el.oralProductionsPanel.hidden;
   if (opening) {
