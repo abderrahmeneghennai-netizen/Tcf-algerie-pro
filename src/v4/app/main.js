@@ -7,6 +7,7 @@ import { SeedService } from '../services/SeedService.js';
 import { ContentService } from '../services/ContentService.js';
 import { ExpressionOraleService } from '../services/ExpressionOraleService.js';
 import { ExpressionEcriteService } from '../services/ExpressionEcriteService.js';
+import { CorrectionEcriteService } from '../services/CorrectionEcriteService.js';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 
 const el = {
@@ -42,6 +43,15 @@ const el = {
   writingWordHint: document.querySelector('#writingWordHint'),
   writingSelfAssessment: document.querySelector('#writingSelfAssessment'),
   writingSave: document.querySelector('#writingSaveButton'),
+  writingAnalyze: document.querySelector('#writingAnalyzeButton'),
+  writingCorrectionPanel: document.querySelector('#writingCorrectionPanel'),
+  writingCorrectionSummary: document.querySelector('#writingCorrectionSummary'),
+  writingCorrectionsList: document.querySelector('#writingCorrectionsList'),
+  writingEvaluationList: document.querySelector('#writingEvaluationList'),
+  writingSuggestionsList: document.querySelector('#writingSuggestionsList'),
+  writingCorrectedText: document.querySelector('#writingCorrectedText'),
+  writingApplyCorrections: document.querySelector('#writingApplyCorrections'),
+  writingAIStatus: document.querySelector('#writingAIStatus'),
   writingSaveStatus: document.querySelector('#writingSaveStatus'),
   writingProductionsToggle: document.querySelector('#writingProductionsToggle'),
   writingProductionsPanel: document.querySelector('#writingProductionsPanel'),
@@ -84,6 +94,7 @@ const progress = new ProgressService(sqliteDatabase);
 const content = new ContentService(sqliteDatabase);
 const oralService = new ExpressionOraleService(sqliteDatabase);
 const writingService = new ExpressionEcriteService(sqliteDatabase);
+const correctionService = new CorrectionEcriteService();
 const moduleIds = {};
 let activeModule = 'GRAM';
 let activeLevel = 'B1';
@@ -747,8 +758,90 @@ function displayWritingSubject() {
   el.writingGuidance.textContent = 'Niveau ' + subject.niveau + ' · ' + (subject.nb_mots_attendu || 'Longueur libre') + ' · Le compteur est indicatif.';
   el.writingAnswer.value = '';
   el.writingSelfAssessment.value = '';
+  if (el.writingCorrectionPanel) el.writingCorrectionPanel.hidden = true;
+  if (el.writingCorrectionSummary) el.writingCorrectionSummary.textContent = '';
+  if (el.writingAIStatus) el.writingAIStatus.textContent = 'Correction IA avancée : intégration sécurisée à configurer. Aucun texte n’est envoyé en ligne.';
   el.writingSaveStatus.textContent = '';
   updateWritingWordCount();
+}
+
+function fillCorrectionList(container, items, emptyMessage, formatter) {
+  container.replaceChildren();
+  if (!items.length) {
+    const empty = document.createElement('li');
+    empty.textContent = emptyMessage;
+    container.append(empty);
+    return;
+  }
+  items.forEach((item) => {
+    const entry = document.createElement('li');
+    entry.textContent = formatter(item);
+    container.append(entry);
+  });
+}
+
+function analyzeWritingProduction() {
+  el.writingAnalyze.disabled = true;
+  el.writingAnalyze.textContent = 'Analyse en cours…';
+  try {
+    const result = correctionService.analyzeLocally({
+      text: el.writingAnswer.value,
+      subject: currentWritingSubject
+    });
+    el.writingCorrectionSummary.textContent = result.notice;
+    fillCorrectionList(
+      el.writingCorrectionsList,
+      result.findings,
+      'Aucune erreur fréquente n’a été repérée par les règles locales. Cela ne garantit pas un texte sans faute.',
+      (item) => item.original + ' → ' + item.replacement + ' — ' + item.explanation
+    );
+    fillCorrectionList(
+      el.writingEvaluationList,
+      result.evaluation,
+      'Évaluation indisponible.',
+      (item) => item.title + ' : ' + item.label + ' — ' + item.detail
+    );
+    fillCorrectionList(
+      el.writingSuggestionsList,
+      result.suggestions,
+      'Aucun conseil disponible.',
+      (item) => item
+    );
+    el.writingCorrectedText.value = result.corrected;
+    correctionService.correctWithAI({
+      text: el.writingAnswer.value,
+      subject: currentWritingSubject,
+      level: activeLevel
+    }).then((ai) => {
+      el.writingAIStatus.textContent = ai.available
+        ? 'Correction IA avancée disponible via le fournisseur configuré.'
+        : ai.reason;
+    }).catch(() => {
+      el.writingAIStatus.textContent = 'La correction IA avancée n’est pas disponible pour le moment.';
+    });
+    el.writingCorrectionPanel.hidden = false;
+    el.writingCorrectionPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (error) {
+    el.writingCorrectionSummary.textContent = String(error?.message || error);
+    el.writingCorrectionPanel.hidden = false;
+    el.writingCorrectionsList.replaceChildren();
+    el.writingEvaluationList.replaceChildren();
+    el.writingSuggestionsList.replaceChildren();
+    el.writingCorrectedText.value = '';
+  } finally {
+    el.writingAnalyze.disabled = false;
+    el.writingAnalyze.textContent = 'Analyser mon texte hors ligne';
+  }
+}
+
+function applyWritingCorrections() {
+  const corrected = el.writingCorrectedText.value;
+  if (!corrected) return;
+  if (!window.confirm('Remplacer votre texte actuel par la version corrigée ? Votre texte initial sera remplacé dans l’éditeur.')) return;
+  el.writingAnswer.value = corrected;
+  updateWritingWordCount();
+  el.writingSaveStatus.textContent = 'Version corrigée appliquée. Pensez à sauvegarder votre production.';
+  el.writingCorrectionPanel.hidden = true;
 }
 
 async function saveWritingProduction() {
@@ -1064,6 +1157,8 @@ async function start() {
     if (el.writingSubject) el.writingSubject.addEventListener('change', displayWritingSubject);
     if (el.writingAnswer) el.writingAnswer.addEventListener('input', updateWritingWordCount);
     if (el.writingSave) el.writingSave.addEventListener('click', saveWritingProduction);
+    if (el.writingAnalyze) el.writingAnalyze.addEventListener('click', analyzeWritingProduction);
+    if (el.writingApplyCorrections) el.writingApplyCorrections.addEventListener('click', applyWritingCorrections);
     if (el.writingProductionsToggle) el.writingProductionsToggle.addEventListener('click', toggleWritingProductions);
     if (el.oralSubject) el.oralSubject.addEventListener('change', displayOralSubject);
     if (el.oralRecord) el.oralRecord.addEventListener('click', startOralRecording);
