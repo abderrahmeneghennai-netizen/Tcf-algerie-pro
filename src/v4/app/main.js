@@ -51,7 +51,6 @@ const el = {
   writingSuggestionsList: document.querySelector('#writingSuggestionsList'),
   writingCorrectedText: document.querySelector('#writingCorrectedText'),
   writingApplyCorrections: document.querySelector('#writingApplyCorrections'),
-  writingAIStatus: document.querySelector('#writingAIStatus'),
   writingSaveStatus: document.querySelector('#writingSaveStatus'),
   writingProductionsToggle: document.querySelector('#writingProductionsToggle'),
   writingProductionsPanel: document.querySelector('#writingProductionsPanel'),
@@ -760,7 +759,6 @@ function displayWritingSubject() {
   el.writingSelfAssessment.value = '';
   if (el.writingCorrectionPanel) el.writingCorrectionPanel.hidden = true;
   if (el.writingCorrectionSummary) el.writingCorrectionSummary.textContent = '';
-  if (el.writingAIStatus) el.writingAIStatus.textContent = 'Correction IA avancée : intégration sécurisée à configurer. Aucun texte n’est envoyé en ligne.';
   el.writingSaveStatus.textContent = '';
   updateWritingWordCount();
 }
@@ -808,17 +806,7 @@ function analyzeWritingProduction() {
       (item) => item
     );
     el.writingCorrectedText.value = result.corrected;
-    correctionService.correctWithAI({
-      text: el.writingAnswer.value,
-      subject: currentWritingSubject,
-      level: activeLevel
-    }).then((ai) => {
-      el.writingAIStatus.textContent = ai.available
-        ? 'Correction IA avancée disponible via le fournisseur configuré.'
-        : ai.reason;
-    }).catch(() => {
-      el.writingAIStatus.textContent = 'La correction IA avancée n’est pas disponible pour le moment.';
-    });
+
     el.writingCorrectionPanel.hidden = false;
     el.writingCorrectionPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (error) {
