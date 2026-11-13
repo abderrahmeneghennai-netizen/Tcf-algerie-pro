@@ -93,7 +93,7 @@ async function playAudio() {
       await TextToSpeech.speak({
         text: currentAudio.transcription,
         lang: frenchLanguage,
-        rate: activeLevel === 'B2' ? 0.96 : 0.91,
+        rate: activeLevel === 'B2' ? 0.84 : 0.78,
         pitch: 1,
         volume: 1
       });
@@ -101,7 +101,7 @@ async function playAudio() {
       await TextToSpeech.speak({
         text: currentAudio.transcription,
         lang: 'fr-FR',
-        rate: activeLevel === 'B2' ? 0.96 : 0.91,
+        rate: activeLevel === 'B2' ? 0.84 : 0.78,
         pitch: 1,
         volume: 1
       });
