@@ -177,6 +177,24 @@
         <label class="control-label" for="writingAnswer">Votre production écrite</label>
         <textarea class="writing-answer" id="writingAnswer" rows="10" placeholder="Rédigez votre réponse ici…"></textarea>
         <div class="writing-word-row"><span id="writingWordCount">0 mot</span><span id="writingWordHint">Repère indicatif</span></div>
+        <button class="secondary-button" id="writingAnalyzeButton" type="button">Analyser mon texte hors ligne</button>
+        <section class="writing-correction-panel" id="writingCorrectionPanel" hidden aria-labelledby="writingCorrectionTitle">
+          <div class="history-heading">
+            <h3 id="writingCorrectionTitle">Analyse pédagogique de votre texte</h3>
+            <span>Outil local · sans envoi en ligne</span>
+          </div>
+          <p id="writingCorrectionSummary" class="writing-correction-note" aria-live="polite"></p>
+          <h4>Corrections repérées</h4>
+          <ul id="writingCorrectionsList" class="writing-result-list"></ul>
+          <h4>Évaluation indicative</h4>
+          <ul id="writingEvaluationList" class="writing-result-list"></ul>
+          <h4>Conseils pour progresser</h4>
+          <ul id="writingSuggestionsList" class="writing-result-list"></ul>
+          <label class="control-label" for="writingCorrectedText">Version avec corrections automatiques à relire</label>
+          <textarea class="writing-answer" id="writingCorrectedText" rows="7" readonly></textarea>
+          <button class="primary-button" id="writingApplyCorrections" type="button">Appliquer cette version à mon texte</button>
+          <p id="writingAIStatus" class="writing-guidance" aria-live="polite">Correction IA avancée : intégration sécurisée à configurer. Aucun texte n’est envoyé en ligne.</p>
+        </section>
         <label class="control-label" for="writingSelfAssessment">Autoévaluation</label>
         <select class="oral-select" id="writingSelfAssessment">
           <option value="">Choisir une appréciation</option>
