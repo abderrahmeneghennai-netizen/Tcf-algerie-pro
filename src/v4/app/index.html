@@ -29,8 +29,25 @@
           <p class="eyebrow">ENTRAÎNEMENT GRATUIT</p>
           <h2 id="exerciseTitle">Grammaire — niveau B1</h2>
         </div>
-        <span class="level-chip">B1</span>
+        <span class="level-chip" id="levelChip">B1</span>
       </div>
+      <div class="training-controls" aria-label="Choisir un module et un niveau">
+        <div class="control-group">
+          <span class="control-label">Compétence</span>
+          <button class="choice-button selected" id="grammarModuleButton" type="button">Grammaire</button>
+          <button class="choice-button" id="ceModuleButton" type="button">Compréhension écrite</button>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Niveau</span>
+          <button class="choice-button selected" id="b1LevelButton" type="button">B1</button>
+          <button class="choice-button" id="b2LevelButton" type="button">B2</button>
+        </div>
+      </div>
+      <section class="reading-support" id="readingSupport" hidden aria-labelledby="readingTitle">
+        <p class="eyebrow">DOCUMENT À LIRE</p>
+        <h3 id="readingTitle"></h3>
+        <p id="readingText"></p>
+      </section>
       <div class="progress-line">
         <span id="progressLabel">Question 0 / 0</span>
         <span id="scoreLabel">0 bonne(s) réponse(s) sur 0</span>
@@ -56,7 +73,7 @@
       <h2>Les compétences TCF</h2>
       <div class="module-grid">
         <article>Compréhension orale <small>CO</small></article>
-        <article>Compréhension écrite <small>CE</small></article>
+        <article class="active-module">Compréhension écrite <small>CE · B1-B2</small></article>
         <article>Expression écrite <small>EE</small></article>
         <article>Expression orale <small>EO</small></article>
         <article class="active-module">Grammaire <small>GRAM · B1</small></article>
