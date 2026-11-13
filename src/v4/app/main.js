@@ -487,8 +487,23 @@ function startOralTranscription() {
 
     instance.onerror = (event) => {
       if (recognition !== instance || recognitionGeneration !== generation) return;
-      errorMessage = event.error || 'erreur du moteur vocal';
-      el.oralSpeechStatus.textContent = 'Transcription interrompue : ' + errorMessage + '. Le texte déjà reconnu est conservé.';
+
+      const speechError = event.error || 'erreur du moteur vocal';
+
+      // Android Web Speech déclenche normalement "aborted" après un arrêt
+      // demandé par l'utilisateur. Ce n'est pas une panne à afficher.
+      if (speechError === 'aborted' && oralStopRequested) {
+        return;
+      }
+
+      errorMessage = speechError;
+      if (speechError === 'network') {
+        el.oralSpeechStatus.textContent =
+          'Reconnaissance vocale indisponible : vérifiez Internet et le service vocal Google du téléphone. Le texte déjà reconnu est conservé.';
+      } else {
+        el.oralSpeechStatus.textContent =
+          'Transcription interrompue : ' + speechError + '. Le texte déjà reconnu est conservé.';
+      }
     };
 
     instance.onend = () => {
