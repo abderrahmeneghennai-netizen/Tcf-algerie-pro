@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="220" fill="#ffffff"/>
+  <path d="M0 180 Q0 0 180 0 H844 Q1024 0 1024 180 V844 Q1024 1024 844 1024 H180 Q0 1024 0 844Z" fill="none" stroke="#e7edf4" stroke-width="20"/>
+  <path d="M125 210 V814" stroke="#159447" stroke-width="34" stroke-linecap="round"/>
+  <path d="M899 210 V814" stroke="#e43d45" stroke-width="34" stroke-linecap="round"/>
+  <text x="512" y="475" text-anchor="middle" font-family="DejaVu Sans,Arial,sans-serif" font-size="278" font-weight="800" letter-spacing="-18" fill="#102b50">TCF</text>
+  <path d="M290 650 Q400 600 512 665 Q624 600 734 650 V785 Q624 735 512 800 Q400 735 290 785Z" fill="#f4f7fb" stroke="#102b50" stroke-width="24" stroke-linejoin="round"/>
+  <path d="M512 665 V800" stroke="#102b50" stroke-width="18"/>
+  <path d="M430 650 L512 540 L594 650" fill="none" stroke="#e43d45" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M512 540 V650 M475 592 H549 M490 620 H534" stroke="#e43d45" stroke-width="16" stroke-linecap="round"/>
+  <text x="512" y="900" text-anchor="middle" font-family="DejaVu Sans,Arial,sans-serif" font-size="82" font-weight="800" letter-spacing="5" fill="#102b50">ALGÉRIE PRO</text>
+</svg>
