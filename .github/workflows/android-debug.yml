@@ -20,6 +20,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Installer l'outil de génération d'icône
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
       - name: Installer Java
         uses: actions/setup-java@v4
         with:
@@ -35,21 +38,25 @@ jobs:
       - name: Ajouter Android
         run: npx cap add android
 
-      - name: Installer l'outil de génération d'icône
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
-
-      - name: Générer la nouvelle icône Android
+      - name: Autoriser le microphone
         run: |
-          mkdir -p android/app/src/main/res/drawable-nodpi
+          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
+
+      - name: Synchroniser Android
+        run: npx cap sync android
+
+      - name: Générer les icônes Android après synchronisation
+        run: |
           mkdir -p android/app/src/main/res/mipmap-anydpi-v26
           for spec in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
             density=${spec%%:*}
             size=${spec##*:}
             mkdir -p "android/app/src/main/res/mipmap-${density}"
-            convert assets/android-icon.svg -background white -alpha remove -alpha off -resize "${size}x${size}" "android/app/src/main/res/mipmap-${density}/ic_launcher.png"
+            convert -background white assets/android-icon.svg -resize "${size}x${size}!" "android/app/src/main/res/mipmap-${density}/ic_launcher.png"
             cp "android/app/src/main/res/mipmap-${density}/ic_launcher.png" "android/app/src/main/res/mipmap-${density}/ic_launcher_round.png"
           done
-          convert assets/android-icon.svg -background none -resize 432x432 -gravity center -extent 432x432 android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          mkdir -p android/app/src/main/res/drawable-nodpi
+          convert -background none assets/android-icon.svg -resize 432x432! android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
           cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
@@ -58,13 +65,6 @@ jobs:
           </adaptive-icon>
           EOF
           cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-
-      - name: Autoriser le microphone
-        run: |
-          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
-
-      - name: Synchroniser Android
-        run: npx cap sync android
 
       - name: Construire APK
         run: |
