@@ -74,9 +74,6 @@ async function submitAnswer(item, selected, selectedButton) {
   if (answered) return;
   answered = true;
   const isCorrect = normalize(selected) === normalize(item.bonne_reponse);
-  attempted += 1;
-  if (isCorrect) correct += 1;
-
   [...el.answers.querySelectorAll('button')].forEach((button) => {
     button.disabled = true;
     if (normalize(button.textContent) === normalize(item.bonne_reponse)) button.classList.add('correct');
@@ -101,6 +98,9 @@ async function submitAnswer(item, selected, selectedButton) {
       isCorrect,
       elapsedSeconds: Math.max(0, Math.round((Date.now() - startedAt) / 1000))
     });
+    // Le score affiché est mis à jour uniquement après confirmation SQLite.
+    attempted += 1;
+    if (isCorrect) correct += 1;
   } catch (error) {
     saved = false;
     console.error('[TCF V4.0] Enregistrement impossible', error);
@@ -152,6 +152,12 @@ async function start() {
     );
     moduleId = moduleResult.values?.[0]?.id;
     if (!moduleId) throw new Error('Le module Grammaire n’a pas été initialisé.');
+
+    // Restaurer le score cumulé depuis SQLite à chaque démarrage.
+    const savedStats = await progress.getModuleStats(moduleId);
+    attempted = Number(savedStats?.total_tentees ?? 0);
+    correct = Number(savedStats?.total_reussies ?? 0);
+    updateScore();
 
     el.panel.hidden = false;
     await loadBatch();
