@@ -68,6 +68,27 @@ function normalize(value) {
 function updateScore() {
   el.score.textContent = correct + ' bonne(s) réponse(s) sur ' + attempted;
 }
+let frenchTtsLanguagePromise = null;
+
+async function getFrenchTtsLanguage() {
+  if (!frenchTtsLanguagePromise) {
+    frenchTtsLanguagePromise = (async () => {
+      const supported = await TextToSpeech.isLanguageSupported({ lang: 'fr-FR' });
+      if (supported.supported) return 'fr-FR';
+      const available = await TextToSpeech.getSupportedLanguages();
+      const frenchLanguage = (available.languages || []).find((language) => /^fr([_-]|$)/i.test(language));
+      if (!frenchLanguage) {
+        throw new Error('Aucune voix française n’est proposée par le moteur vocal Android.');
+      }
+      return frenchLanguage;
+    })().catch((error) => {
+      frenchTtsLanguagePromise = null;
+      throw error;
+    });
+  }
+  return frenchTtsLanguagePromise;
+}
+
 async function stopAudio() {
   try {
     await TextToSpeech.stop();
@@ -82,30 +103,14 @@ async function playAudio() {
   el.audioPlay.disabled = true;
   el.audioStatus.textContent = 'Préparation de la lecture audio…';
   try {
-    await TextToSpeech.stop();
-    const supported = await TextToSpeech.isLanguageSupported({ lang: 'fr-FR' });
-    if (!supported.supported) {
-      const available = await TextToSpeech.getSupportedLanguages();
-      const frenchLanguage = (available.languages || []).find((language) => /^fr([_-]|$)/i.test(language));
-      if (!frenchLanguage) {
-        throw new Error('Aucune voix française n’est proposée par le moteur vocal Android.');
-      }
-      await TextToSpeech.speak({
-        text: currentAudio.transcription,
-        lang: frenchLanguage,
-        rate: activeLevel === 'B2' ? 0.84 : 0.78,
-        pitch: 1,
-        volume: 1
-      });
-    } else {
-      await TextToSpeech.speak({
-        text: currentAudio.transcription,
-        lang: 'fr-FR',
-        rate: activeLevel === 'B2' ? 0.84 : 0.78,
-        pitch: 1,
-        volume: 1
-      });
-    }
+    const language = await getFrenchTtsLanguage();
+    await TextToSpeech.speak({
+      text: currentAudio.transcription,
+      lang: language,
+      rate: activeLevel === 'B2' ? 0.84 : 0.78,
+      pitch: 1,
+      volume: 1
+    });
     el.audioStatus.textContent = 'Écoute terminée. Vous pouvez réécouter le document.';
   } catch (error) {
     console.error('[TCF V4.0] Lecture native impossible', error);
