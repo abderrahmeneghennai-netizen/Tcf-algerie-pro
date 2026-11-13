@@ -472,6 +472,8 @@ async function openOralModule() {
 }
 
 function closeOralModule() {
+  stopOralRecording();
+  stopOralTranscription();
   el.oralPanel.hidden = true;
   el.questionCard.hidden = false;
   el.progressLine.hidden = false;
