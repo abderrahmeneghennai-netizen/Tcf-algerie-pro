@@ -17,7 +17,7 @@ function assertSqlText(value) {
 }
 
 function removePragmaStatements(sql) {
-  return sql.replace(/^\s*PRAGMA\b[^;]*;\s*/gim, '').trim();
+  return sql.replace(/^\\s*PRAGMA\\b[^;]*;\\s*/gim, '').trim();
 }
 
 export class SQLiteDatabase {
@@ -54,15 +54,11 @@ export class SQLiteDatabase {
       await connection.open();
 
       // Les PRAGMA sont exécutés hors transaction.
-      // foreign_keys doit être activé sur chaque connexion.
       await connection.execute('PRAGMA foreign_keys = ON;', false);
       await connection.execute('PRAGMA synchronous = NORMAL;', false);
-      // journal_mode = WAL renvoie une ligne de résultat : utiliser query(),
-      // car execute() passe par execSQL() et refuse les requêtes avec résultat.
+      // journal_mode renvoie une ligne : query() est obligatoire.
       await connection.query('PRAGMA journal_mode = WAL;');
 
-      // Le fichier source conserve les PRAGMA d'origine. Ils ont déjà été
-      // appliqués ci-dessus; on exécute ici uniquement les CREATE TABLE.
       const tableStatements = removePragmaStatements(schemaSql);
       if (tableStatements.length === 0) {
         throw new Error('Aucune instruction de création de table trouvée.');
@@ -97,8 +93,10 @@ export class SQLiteDatabase {
     return this.getConnection().query(statement, values);
   }
 
-  run(statement, values = []) {
-    return this.getConnection().run(statement, values);
+  // Hors transaction explicite, run() conserve son comportement transactionnel
+  // par défaut. Le troisième argument permet de le désactiver dans un lot.
+  run(statement, values = [], transaction = true) {
+    return this.getConnection().run(statement, values, transaction);
   }
 
   execute(statement, transaction = true) {
@@ -108,12 +106,28 @@ export class SQLiteDatabase {
   async transaction(callback) {
     const db = this.getConnection();
     await db.beginTransaction();
+
+    // IMPORTANT : run()/execute() sont transactionnels par défaut dans le
+    // plugin. À l'intérieur de cette transaction manuelle, ils doivent donc
+    // recevoir transaction=false, sinon SQLite tente une transaction imbriquée.
+    const transactionDb = {
+      query: (statement, values = []) => db.query(statement, values),
+      run: (statement, values = []) => db.run(statement, values, false),
+      execute: (statement) => db.execute(statement, false)
+    };
+
     try {
-      const result = await callback(db);
+      const result = await callback(transactionDb);
       await db.commitTransaction();
       return result;
     } catch (error) {
-      await db.rollbackTransaction();
+      try {
+        if (await db.isTransactionActive()) {
+          await db.rollbackTransaction();
+        }
+      } catch {
+        // Préserver l'erreur initiale si le rollback échoue également.
+      }
       throw error;
     }
   }
