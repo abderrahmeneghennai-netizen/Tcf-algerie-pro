@@ -21,7 +21,7 @@ jobs:
           node-version: 20
 
       - name: Installer l'outil de génération d'icône
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
+        run: sudo apt-get update && sudo apt-get install -y librsvg2-bin
 
       - name: Installer Java
         uses: actions/setup-java@v4
@@ -52,11 +52,24 @@ jobs:
             density=${spec%%:*}
             size=${spec##*:}
             mkdir -p "android/app/src/main/res/mipmap-${density}"
-            convert -background white assets/android-icon.svg -resize "${size}x${size}!" "android/app/src/main/res/mipmap-${density}/ic_launcher.png"
+            rsvg-convert --width "${size}" --height "${size}" assets/android-icon.svg --output "android/app/src/main/res/mipmap-${density}/ic_launcher.png"
             cp "android/app/src/main/res/mipmap-${density}/ic_launcher.png" "android/app/src/main/res/mipmap-${density}/ic_launcher_round.png"
           done
           mkdir -p android/app/src/main/res/drawable-nodpi
-          convert -background none assets/android-icon.svg -resize 432x432! android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          rsvg-convert --width 432 --height 432 assets/android-icon.svg --output android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          path = "android/app/src/main/AndroidManifest.xml"
+          tree = ET.parse(path)
+          root = tree.getroot()
+          android = "{http://schemas.android.com/apk/res/android}"
+          application = root.find("application")
+          if application is None:
+              raise SystemExit("Balise application introuvable dans AndroidManifest.xml")
+          application.set(android + "icon", "@mipmap/ic_launcher")
+          application.set(android + "roundIcon", "@mipmap/ic_launcher_round")
+          tree.write(path, encoding="utf-8", xml_declaration=True)
+          PY
           cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
