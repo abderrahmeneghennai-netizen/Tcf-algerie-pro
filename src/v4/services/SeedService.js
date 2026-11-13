@@ -87,7 +87,7 @@ export class SeedService {
         ['pack_free_discovery', 'Pack gratuit — Découverte B1-B2', 'Premiers exercices gratuits de grammaire et de compréhension écrite']
       );
 
-      const moduleRows = await db.query("SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE')");
+      const moduleRows = await db.query("SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO')");
       const packResult = await db.query("SELECT id FROM packs WHERE code = ? LIMIT 1", ['pack_free_discovery']);
       const moduleIds = Object.fromEntries((moduleRows.values ?? []).map(row => [row.code, row.id]));
       const packId = packResult.values?.[0]?.id;
