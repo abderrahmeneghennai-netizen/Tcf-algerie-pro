@@ -28,11 +28,7 @@ const el = {
   historyList: document.querySelector('#historyList'),
   exerciseTitle: document.querySelector('#exerciseTitle'),
   levelChip: document.querySelector('#levelChip'),
-  grammarButton: document.querySelector('#grammarModuleButton'),
-  ceButton: document.querySelector('#ceModuleButton'),
-  coButton: document.querySelector('#coModuleButton'),
-  eoButton: document.querySelector('#eoModuleButton'),
-  eeButton: document.querySelector('#eeModuleButton'),
+  moduleCards: document.querySelectorAll('[data-module]'),
   writingPanel: document.querySelector('#writingPanel'),
   writingSubject: document.querySelector('#writingSubjectSelect'),
   writingTaskLabel: document.querySelector('#writingTaskLabel'),
@@ -1082,11 +1078,11 @@ function updateTrainingControls() {
   const names = { GRAM:'Grammaire', CE:'Compréhension écrite', CO:'Compréhension orale', EO:'Expression orale', EE:'Expression écrite' };
   el.exerciseTitle.textContent = (names[activeModule] || 'Entraînement') + ' — niveau ' + activeLevel;
   el.levelChip.textContent = activeLevel;
-  el.grammarButton?.classList.toggle('selected', activeModule === 'GRAM');
-  el.ceButton?.classList.toggle('selected', activeModule === 'CE');
-  el.coButton?.classList.toggle('selected', activeModule === 'CO');
-  el.eoButton?.classList.toggle('selected', activeModule === 'EO');
-  el.eeButton?.classList.toggle('selected', activeModule === 'EE');
+  el.moduleCards.forEach(card => {
+    const selected = card.dataset.module === activeModule;
+    card.classList.toggle('active-module', selected);
+    card.setAttribute('aria-pressed', String(selected));
+  });
   el.b1Button?.classList.toggle('selected', activeLevel === 'B1');
   el.b2Button?.classList.toggle('selected', activeLevel === 'B2');
 }
@@ -1168,11 +1164,9 @@ async function start() {
     // Les commandes d'interface sont attachées uniquement si leur élément existe.
     // Cela évite qu'un ancien index.html en cache bloque toute l'initialisation.
     if (el.historyButton) el.historyButton.addEventListener('click', showHistory);
-    if (el.grammarButton) el.grammarButton.addEventListener('click', () => chooseModule('GRAM').catch(handleModuleError));
-    if (el.ceButton) el.ceButton.addEventListener('click', () => chooseModule('CE').catch(handleModuleError));
-    if (el.coButton) el.coButton.addEventListener('click', () => chooseModule('CO').catch(handleModuleError));
-    if (el.eoButton) el.eoButton.addEventListener('click', () => chooseModule('EO').catch(handleModuleError));
-    if (el.eeButton) el.eeButton.addEventListener('click', () => chooseModule('EE').catch(handleModuleError));
+    el.moduleCards.forEach(card => {
+      card.addEventListener('click', () => chooseModule(card.dataset.module).catch(handleModuleError));
+    });
     if (el.writingSubject) el.writingSubject.addEventListener('change', displayWritingSubject);
     if (el.writingAnswer) el.writingAnswer.addEventListener('input', updateWritingWordCount);
     if (el.writingSave) el.writingSave.addEventListener('click', saveWritingProduction);
