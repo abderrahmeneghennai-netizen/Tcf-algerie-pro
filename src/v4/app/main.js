@@ -81,6 +81,7 @@ let mediaRecorder = null;
 let mediaStream = null;
 let recordedChunks = [];
 let recognition = null;
+let oralStopRequested = false;
 let recordedAudioUrl = null;
 
 function status(kind, heading, detail, diagnostic = '') {
@@ -412,7 +413,7 @@ function startOralTranscription() {
     recognition = instance;
     const initialText = el.oralTranscript.value.trim();
     const segments = [];
-    let stopRequested = false;
+    oralStopRequested = false;
     let errorMessage = '';
 
     instance.lang = 'fr-FR';
@@ -451,7 +452,7 @@ function startOralTranscription() {
       el.oralSpeechStop.disabled = true;
       if (errorMessage) {
         el.oralSpeechStatus.textContent = 'Transcription interrompue : ' + errorMessage + '. Le texte déjà reconnu est conservé.';
-      } else if (stopRequested) {
+      } else if (oralStopRequested) {
         el.oralSpeechStatus.textContent = 'Transcription arrêtée. Le texte reconnu est conservé ; vous pouvez le corriger.';
       } else {
         el.oralSpeechStatus.textContent = 'Transcription terminée. Relisez et corrigez le texte si nécessaire.';
@@ -479,6 +480,7 @@ function stopOralTranscription() {
     return;
   }
 
+  oralStopRequested = true;
   el.oralSpeechStop.disabled = true;
   el.oralSpeech.disabled = true;
   el.oralSpeechStatus.textContent = 'Arrêt de la transcription… Le texte reconnu est conservé.';
