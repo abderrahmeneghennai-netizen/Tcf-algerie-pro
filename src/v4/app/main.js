@@ -1,5 +1,5 @@
 import './style.css';
-import schemaSql from '../database/schema-v4.sql?raw';
+import schemaSql from '../../../database/schema-v4.sql?raw';
 import { sqliteDatabase } from '../database/SQLiteDatabase.js';
 
 const title = document.querySelector('#statusTitle');
