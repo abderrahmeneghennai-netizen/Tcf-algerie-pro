@@ -12,6 +12,9 @@ jobs:
       - name: Recuperer le projet
         uses: actions/checkout@v4
 
+      - name: Vérifier le schéma SQLite V4
+        run: python3 tests/sqlite_schema_test.py
+
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
