@@ -402,42 +402,105 @@ function startOralTranscription() {
     el.oralSpeechStatus.textContent = 'La reconnaissance vocale n’est pas disponible sur ce téléphone. Vous pouvez saisir votre réponse dans la zone de texte.';
     return;
   }
+  if (recognition) {
+    el.oralSpeechStatus.textContent = 'La transcription est déjà active ou son arrêt est en cours.';
+    return;
+  }
+
   try {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'fr-FR';
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    let finalText = el.oralTranscript.value.trim();
-    recognition.onresult = (event) => {
-      let interim = '';
+    const instance = new SpeechRecognition();
+    recognition = instance;
+    const initialText = el.oralTranscript.value.trim();
+    const segments = [];
+    let stopRequested = false;
+    let errorMessage = '';
+
+    instance.lang = 'fr-FR';
+    instance.continuous = true;
+    instance.interimResults = true;
+    instance.maxAlternatives = 1;
+
+    instance.onstart = () => {
+      el.oralSpeech.disabled = true;
+      el.oralSpeechStop.disabled = false;
+      el.oralSpeechStatus.textContent = 'Écoute en cours… Parlez clairement en français.';
+    };
+
+    instance.onresult = (event) => {
+      // On remplace chaque segment par son dernier résultat : aucun doublon
+      // lorsque le moteur transforme une proposition provisoire en résultat final.
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        const part = event.results[i][0]?.transcript || '';
-        if (event.results[i].isFinal) finalText += (finalText ? ' ' : '') + part.trim();
-        else interim += part;
+        const result = event.results[i];
+        segments[i] = {
+          text: (result[0]?.transcript || '').trim(),
+          final: Boolean(result.isFinal)
+        };
       }
-      el.oralTranscript.value = [finalText, interim].filter(Boolean).join(' ').trim();
+      const recognizedText = segments.map((part) => part?.text || '').filter(Boolean).join(' ');
+      el.oralTranscript.value = [initialText, recognizedText].filter(Boolean).join(' ').trim();
     };
-    recognition.onerror = (event) => {
-      el.oralSpeechStatus.textContent = 'Transcription interrompue : ' + (event.error || 'erreur du moteur vocal') + '. Vous pouvez saisir le texte manuellement.';
+
+    instance.onerror = (event) => {
+      errorMessage = event.error || 'erreur du moteur vocal';
+      el.oralSpeechStatus.textContent = 'Transcription interrompue : ' + errorMessage + '. Le texte déjà reconnu est conservé.';
     };
-    recognition.onend = () => {
+
+    instance.onend = () => {
+      if (recognition === instance) recognition = null;
       el.oralSpeech.disabled = false;
       el.oralSpeechStop.disabled = true;
-      if (!el.oralSpeechStatus.textContent.includes('Transcription interrompue')) {
+      if (errorMessage) {
+        el.oralSpeechStatus.textContent = 'Transcription interrompue : ' + errorMessage + '. Le texte déjà reconnu est conservé.';
+      } else if (stopRequested) {
+        el.oralSpeechStatus.textContent = 'Transcription arrêtée. Le texte reconnu est conservé ; vous pouvez le corriger.';
+      } else {
         el.oralSpeechStatus.textContent = 'Transcription terminée. Relisez et corrigez le texte si nécessaire.';
       }
     };
-    recognition.start();
+
+    instance.start();
     el.oralSpeech.disabled = true;
     el.oralSpeechStop.disabled = false;
-    el.oralSpeechStatus.textContent = 'Écoute en cours… Parlez clairement en français.';
+    el.oralSpeechStatus.textContent = 'Démarrage de la reconnaissance vocale…';
   } catch (error) {
+    recognition = null;
+    el.oralSpeech.disabled = false;
+    el.oralSpeechStop.disabled = true;
     el.oralSpeechStatus.textContent = 'Impossible de démarrer la transcription : ' + String(error?.message || error);
   }
 }
 
 function stopOralTranscription() {
-  try { recognition?.stop(); } catch { /* arrêt déjà demandé */ }
+  const instance = recognition;
+  if (!instance) {
+    el.oralSpeechStop.disabled = true;
+    el.oralSpeech.disabled = false;
+    el.oralSpeechStatus.textContent = 'Aucune transcription en cours.';
+    return;
+  }
+
+  el.oralSpeechStop.disabled = true;
+  el.oralSpeech.disabled = true;
+  el.oralSpeechStatus.textContent = 'Arrêt de la transcription… Le texte reconnu est conservé.';
+
+  try {
+    // stop() demande au moteur de terminer proprement le dernier segment.
+    instance.stop();
+  } catch (error) {
+    // Si le moteur refuse stop(), abort() coupe immédiatement l'écoute.
+    try { instance.abort(); } catch { /* le moteur est déjà arrêté */ }
+  }
+
+  // Certains moteurs intégrés à Android/WebView ne déclenchent pas onend
+  // après stop(). Ce recours garantit la libération de l'interface.
+  window.setTimeout(() => {
+    if (recognition !== instance) return;
+    try { instance.abort(); } catch { /* arrêt déjà effectué */ }
+    recognition = null;
+    el.oralSpeech.disabled = false;
+    el.oralSpeechStop.disabled = true;
+    el.oralSpeechStatus.textContent = 'Transcription arrêtée. Le texte déjà reconnu est conservé ; vous pouvez le corriger.';
+  }, 1500);
 }
 
 async function saveOralProduction() {
