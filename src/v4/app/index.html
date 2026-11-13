@@ -90,6 +90,7 @@
           <button class="choice-button selected" id="grammarModuleButton" type="button">Grammaire</button>
           <button class="choice-button" id="ceModuleButton" type="button">Compréhension écrite</button>
           <button class="choice-button" id="coModuleButton" type="button">Compréhension orale</button>
+          <button class="choice-button" id="eoModuleButton" type="button">Expression orale</button>
         </div>
         <div class="control-group">
           <span class="control-label">Niveau</span>
@@ -113,6 +114,43 @@
         <p class="audio-status" id="audioStatus" aria-live="polite">Lecture vocale en français disponible selon les voix installées sur l’appareil.</p>
         <button class="secondary-button" id="transcriptionButton" type="button" hidden>Afficher la transcription</button>
         <p class="audio-transcript" id="audioTranscript" hidden></p>
+      </section>
+      <section class="oral-panel" id="oralPanel" hidden aria-labelledby="oralTitle">
+        <p class="eyebrow">ATELIER D’EXPRESSION ORALE</p>
+        <div class="oral-heading">
+          <h3 id="oralTitle">Préparez votre réponse</h3>
+          <span class="level-chip" id="oralDuration">2 min</span>
+        </div>
+        <label class="control-label" for="oralSubjectSelect">Sujet d’entraînement</label>
+        <select class="oral-select" id="oralSubjectSelect"></select>
+        <article class="oral-prompt">
+          <p class="eyebrow">VOTRE CONSIGNE</p>
+          <p id="oralPrompt"></p>
+        </article>
+        <div class="oral-actions">
+          <button class="primary-button" id="oralRecordButton" type="button">Commencer l’enregistrement</button>
+          <button class="secondary-button" id="oralStopButton" type="button" disabled>Arrêter</button>
+        </div>
+        <p class="audio-status" id="oralRecordStatus" aria-live="polite">L’enregistrement reste sur votre appareil et n’est pas envoyé.</p>
+        <audio id="oralPlayback" controls hidden></audio>
+        <div class="oral-transcription">
+          <label class="control-label" for="oralTranscript">Transcription ou notes de votre réponse</label>
+          <textarea id="oralTranscript" rows="5" placeholder="Votre transcription apparaîtra ici si la reconnaissance vocale est disponible. Vous pouvez aussi écrire vos notes."></textarea>
+          <div class="oral-actions">
+            <button class="secondary-button" id="oralSpeechButton" type="button">Démarrer la transcription vocale</button>
+            <button class="secondary-button" id="oralSpeechStopButton" type="button" disabled>Arrêter la transcription</button>
+          </div>
+          <p class="audio-status" id="oralSpeechStatus" aria-live="polite">La transcription dépend de la compatibilité du moteur vocal Android.</p>
+        </div>
+        <label class="control-label" for="oralSelfAssessment">Autoévaluation</label>
+        <select class="oral-select" id="oralSelfAssessment">
+          <option value="">Choisir une appréciation</option>
+          <option value="À retravailler">Je dois encore m’entraîner</option>
+          <option value="Satisfaisant">Réponse satisfaisante</option>
+          <option value="Très satisfaisant">Réponse très satisfaisante</option>
+        </select>
+        <button class="primary-button" id="oralSaveButton" type="button">Enregistrer ma production</button>
+        <p class="oral-save-status" id="oralSaveStatus" aria-live="polite"></p>
       </section>
       <div class="progress-line">
         <span id="progressLabel">Question 0 / 0</span>
