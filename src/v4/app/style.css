@@ -143,3 +143,14 @@
 .oral-production-delete{margin-top:12px;border-color:#a94f79;color:#ffd5e2}
 .oral-production-delete:disabled{opacity:.55}
 @media(max-width:480px){.oral-productions{padding:12px}}
+
+
+/* Historique des productions orales : classement et édition */
+.oral-production-group{display:grid;gap:10px;margin-top:18px}
+.oral-production-group>h4{margin:0;padding:10px 12px;border-left:3px solid #e5bd68;border-radius:7px;background:#172d49;color:#e5bd68;font-size:13px;letter-spacing:.04em}
+.oral-production-answer{white-space:pre-wrap;overflow-wrap:anywhere}
+.oral-production-editor{display:grid;gap:8px;margin-top:14px;padding:12px;border:1px solid #405675;border-radius:10px;background:#081426}
+.oral-production-editor .oral-select{margin:0}
+.oral-production-editor .oral-actions{margin:4px 0 0}
+.oral-production-editor .primary-button,.oral-production-editor .secondary-button{flex:1}
+@media(max-width:480px){.oral-production-editor .oral-actions{display:grid}.oral-production-editor .oral-actions button{width:100%}}
