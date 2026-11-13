@@ -107,7 +107,7 @@ async function playAudio() {
     await TextToSpeech.speak({
       text: currentAudio.transcription,
       lang: language,
-      rate: activeLevel === 'B2' ? 0.84 : 0.78,
+      rate: 1.0,
       pitch: 1,
       volume: 1
     });
