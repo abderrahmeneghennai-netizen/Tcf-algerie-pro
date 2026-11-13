@@ -17,7 +17,7 @@ function assertSqlText(value) {
 }
 
 function removePragmaStatements(sql) {
-  return sql.replace(/^\\s*PRAGMA\\b[^;]*;\\s*/gim, '').trim();
+  return sql.replace(/^\s*PRAGMA\b[^;]*;\s*/gim, '').trim();
 }
 
 export class SQLiteDatabase {
