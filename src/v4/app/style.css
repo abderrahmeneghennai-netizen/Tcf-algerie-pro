@@ -134,3 +134,12 @@
 .oral-transcription textarea{resize:vertical;min-height:120px}
 .oral-save-status{min-height:22px;color:#e5bd68;line-height:1.5}
 @media(max-width:480px){.oral-panel{padding:14px}.oral-actions{display:grid}.oral-actions button{width:100%}.oral-heading h3{font-size:17px}}
+
+
+/* Bibliothèque locale des productions orales */
+.oral-productions{margin-top:14px;padding:16px;background:#0d1d33;border:1px solid #e5bd68;border-radius:12px}
+.oral-productions h3{margin:0;font-size:17px}
+.oral-productions .history-heading{align-items:flex-start;flex-wrap:wrap}
+.oral-production-delete{margin-top:12px;border-color:#a94f79;color:#ffd5e2}
+.oral-production-delete:disabled{opacity:.55}
+@media(max-width:480px){.oral-productions{padding:12px}}
