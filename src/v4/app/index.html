@@ -91,6 +91,7 @@
           <button class="choice-button" id="ceModuleButton" type="button">Compréhension écrite</button>
           <button class="choice-button" id="coModuleButton" type="button">Compréhension orale</button>
           <button class="choice-button" id="eoModuleButton" type="button">Expression orale</button>
+          <button class="choice-button" id="eeModuleButton" type="button">Expression écrite</button>
         </div>
         <div class="control-group">
           <span class="control-label">Niveau</span>
@@ -158,6 +159,40 @@
             <span>Enregistrées sur cet appareil</span>
           </div>
           <div class="history-list" id="oralProductionsList" aria-live="polite"></div>
+        </section>
+      </section>
+      <section class="writing-panel" id="writingPanel" hidden aria-labelledby="writingTitle">
+        <p class="eyebrow">ATELIER D’EXPRESSION ÉCRITE</p>
+        <div class="oral-heading">
+          <h3 id="writingTitle">Préparez votre texte</h3>
+          <span class="level-chip" id="writingTaskLabel">Tâche 1</span>
+        </div>
+        <label class="control-label" for="writingSubjectSelect">Sujet d’entraînement</label>
+        <select class="oral-select" id="writingSubjectSelect"></select>
+        <article class="oral-prompt">
+          <p class="eyebrow">VOTRE CONSIGNE</p>
+          <p id="writingPrompt"></p>
+        </article>
+        <p class="writing-guidance" id="writingGuidance"></p>
+        <label class="control-label" for="writingAnswer">Votre production écrite</label>
+        <textarea class="writing-answer" id="writingAnswer" rows="10" placeholder="Rédigez votre réponse ici…"></textarea>
+        <div class="writing-word-row"><span id="writingWordCount">0 mot</span><span id="writingWordHint">Repère indicatif</span></div>
+        <label class="control-label" for="writingSelfAssessment">Autoévaluation</label>
+        <select class="oral-select" id="writingSelfAssessment">
+          <option value="">Choisir une appréciation</option>
+          <option value="À retravailler">Je dois encore m’entraîner</option>
+          <option value="Satisfaisant">Réponse satisfaisante</option>
+          <option value="Très satisfaisant">Réponse très satisfaisante</option>
+        </select>
+        <button class="primary-button" id="writingSaveButton" type="button">Sauvegarder ma production</button>
+        <p class="oral-save-status" id="writingSaveStatus" aria-live="polite"></p>
+        <button class="secondary-button" id="writingProductionsToggle" type="button">Mes productions écrites sauvegardées</button>
+        <section class="oral-productions" id="writingProductionsPanel" hidden aria-labelledby="writingProductionsTitle">
+          <div class="history-heading">
+            <h3 id="writingProductionsTitle">Mes productions écrites</h3>
+            <span>Enregistrées sur cet appareil</span>
+          </div>
+          <div class="history-list" id="writingProductionsList" aria-live="polite"></div>
         </section>
       </section>
       <div class="progress-line">
