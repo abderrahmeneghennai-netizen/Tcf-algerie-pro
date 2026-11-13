@@ -1,11 +1,11 @@
-
 {
   "name": "tcf-algerie-pro",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "private": true,
   "description": "Application de préparation au TCF Canada",
   "scripts": {
-    "build": "echo Build ready"
+    "build": "vite build",
+    "test:sqlite": "python3 tests/sqlite_schema_test.py"
   },
   "dependencies": {
     "@capacitor/core": "^6.2.0",
@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^6.2.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vite": "5.4.14"
   }
 }
