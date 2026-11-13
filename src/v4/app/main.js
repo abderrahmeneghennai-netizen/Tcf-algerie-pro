@@ -5,6 +5,7 @@ import { ExerciseService } from '../services/ExerciseService.js';
 import { ProgressService } from '../services/ProgressService.js';
 import { SeedService } from '../services/SeedService.js';
 import { ContentService } from '../services/ContentService.js';
+import { ExpressionOraleService } from '../services/ExpressionOraleService.js';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 
 const el = {
@@ -28,6 +29,24 @@ const el = {
   grammarButton: document.querySelector('#grammarModuleButton'),
   ceButton: document.querySelector('#ceModuleButton'),
   coButton: document.querySelector('#coModuleButton'),
+  eoButton: document.querySelector('#eoModuleButton'),
+  oralPanel: document.querySelector('#oralPanel'),
+  oralSubject: document.querySelector('#oralSubjectSelect'),
+  oralDuration: document.querySelector('#oralDuration'),
+  oralPrompt: document.querySelector('#oralPrompt'),
+  oralRecord: document.querySelector('#oralRecordButton'),
+  oralStop: document.querySelector('#oralStopButton'),
+  oralRecordStatus: document.querySelector('#oralRecordStatus'),
+  oralPlayback: document.querySelector('#oralPlayback'),
+  oralTranscript: document.querySelector('#oralTranscript'),
+  oralSpeech: document.querySelector('#oralSpeechButton'),
+  oralSpeechStop: document.querySelector('#oralSpeechStopButton'),
+  oralSpeechStatus: document.querySelector('#oralSpeechStatus'),
+  oralSelfAssessment: document.querySelector('#oralSelfAssessment'),
+  oralSave: document.querySelector('#oralSaveButton'),
+  oralSaveStatus: document.querySelector('#oralSaveStatus'),
+  questionCard: document.querySelector('.question-card'),
+  progressLine: document.querySelector('.progress-line'),
   b1Button: document.querySelector('#b1LevelButton'),
   b2Button: document.querySelector('#b2LevelButton'),
   readingSupport: document.querySelector('#readingSupport'),
@@ -44,6 +63,7 @@ const el = {
 const exercises = new ExerciseService(sqliteDatabase);
 const progress = new ProgressService(sqliteDatabase);
 const content = new ContentService(sqliteDatabase);
+const oralService = new ExpressionOraleService(sqliteDatabase);
 const moduleIds = {};
 let activeModule = 'GRAM';
 let activeLevel = 'B1';
@@ -55,6 +75,13 @@ let correct = 0;
 let attempted = 0;
 let startedAt = 0;
 let currentAudio = null;
+let oralSubjects = [];
+let currentOralSubject = null;
+let mediaRecorder = null;
+let mediaStream = null;
+let recordedChunks = [];
+let recognition = null;
+let recordedAudioUrl = null;
 
 function status(kind, heading, detail, diagnostic = '') {
   el.title.textContent = heading;
@@ -284,6 +311,173 @@ async function showHistory() {
     el.historyButton.disabled = false;
   }
 }
+
+async function loadOralSubjects() {
+  oralSubjects = await oralService.listSubjects(activeLevel);
+  el.oralSubject.replaceChildren();
+  if (!oralSubjects.length) {
+    currentOralSubject = null;
+    el.oralPrompt.textContent = 'Aucun sujet gratuit disponible pour ce niveau.';
+    el.oralDuration.textContent = activeLevel;
+    el.oralSave.disabled = true;
+    return;
+  }
+  oralSubjects.forEach((subject) => {
+    const option = document.createElement('option');
+    option.value = String(subject.id);
+    option.textContent = subject.stable_code.replace('eo-' + activeLevel.toLowerCase() + '-', '').replaceAll('-', ' ');
+    el.oralSubject.append(option);
+  });
+  currentOralSubject = oralSubjects[0];
+  el.oralSubject.value = String(currentOralSubject.id);
+  displayOralSubject();
+  el.oralSave.disabled = false;
+}
+
+function displayOralSubject() {
+  const subject = oralSubjects.find((item) => String(item.id) === el.oralSubject.value);
+  if (!subject) return;
+  currentOralSubject = subject;
+  el.oralPrompt.textContent = subject.consigne;
+  el.oralDuration.textContent = subject.duree_minutes + ' min';
+  el.oralSaveStatus.textContent = '';
+  el.oralTranscript.value = '';
+  el.oralSelfAssessment.value = '';
+}
+
+async function startOralRecording() {
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+    el.oralRecordStatus.textContent = 'Cet appareil ne permet pas l’enregistrement audio dans cette version.';
+    return;
+  }
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(mediaStream);
+    mediaRecorder.addEventListener('dataavailable', (event) => {
+      if (event.data?.size) recordedChunks.push(event.data);
+    });
+    mediaRecorder.addEventListener('stop', () => {
+      const blob = new Blob(recordedChunks, { type: mediaRecorder?.mimeType || 'audio/webm' });
+      if (recordedAudioUrl) URL.revokeObjectURL(recordedAudioUrl);
+      recordedAudioUrl = URL.createObjectURL(blob);
+      el.oralPlayback.src = recordedAudioUrl;
+      el.oralPlayback.hidden = false;
+      el.oralRecordStatus.textContent = 'Enregistrement terminé. Vous pouvez réécouter votre réponse.';
+      mediaStream?.getTracks().forEach((track) => track.stop());
+      mediaStream = null;
+      el.oralRecord.disabled = false;
+      el.oralStop.disabled = true;
+    });
+    mediaRecorder.addEventListener('error', () => {
+      el.oralRecordStatus.textContent = 'Une erreur a interrompu l’enregistrement.';
+      mediaStream?.getTracks().forEach((track) => track.stop());
+      mediaStream = null;
+      el.oralRecord.disabled = false;
+      el.oralStop.disabled = true;
+    });
+    mediaRecorder.start();
+    el.oralRecord.disabled = true;
+    el.oralStop.disabled = false;
+    el.oralRecordStatus.textContent = 'Enregistrement en cours… Appuyez sur Arrêter lorsque vous avez terminé.';
+  } catch (error) {
+    el.oralRecordStatus.textContent = 'Microphone indisponible ou autorisation refusée : ' + String(error?.message || error);
+  }
+}
+
+function stopOralRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  } else {
+    mediaStream?.getTracks().forEach((track) => track.stop());
+    mediaStream = null;
+    el.oralRecord.disabled = false;
+    el.oralStop.disabled = true;
+  }
+}
+
+function startOralTranscription() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    el.oralSpeechStatus.textContent = 'La reconnaissance vocale n’est pas disponible sur ce téléphone. Vous pouvez saisir votre réponse dans la zone de texte.';
+    return;
+  }
+  try {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    let finalText = el.oralTranscript.value.trim();
+    recognition.onresult = (event) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const part = event.results[i][0]?.transcript || '';
+        if (event.results[i].isFinal) finalText += (finalText ? ' ' : '') + part.trim();
+        else interim += part;
+      }
+      el.oralTranscript.value = [finalText, interim].filter(Boolean).join(' ').trim();
+    };
+    recognition.onerror = (event) => {
+      el.oralSpeechStatus.textContent = 'Transcription interrompue : ' + (event.error || 'erreur du moteur vocal') + '. Vous pouvez saisir le texte manuellement.';
+    };
+    recognition.onend = () => {
+      el.oralSpeech.disabled = false;
+      el.oralSpeechStop.disabled = true;
+      if (!el.oralSpeechStatus.textContent.includes('Transcription interrompue')) {
+        el.oralSpeechStatus.textContent = 'Transcription terminée. Relisez et corrigez le texte si nécessaire.';
+      }
+    };
+    recognition.start();
+    el.oralSpeech.disabled = true;
+    el.oralSpeechStop.disabled = false;
+    el.oralSpeechStatus.textContent = 'Écoute en cours… Parlez clairement en français.';
+  } catch (error) {
+    el.oralSpeechStatus.textContent = 'Impossible de démarrer la transcription : ' + String(error?.message || error);
+  }
+}
+
+function stopOralTranscription() {
+  try { recognition?.stop(); } catch { /* arrêt déjà demandé */ }
+}
+
+async function saveOralProduction() {
+  el.oralSave.disabled = true;
+  el.oralSaveStatus.textContent = 'Enregistrement de votre production dans SQLite…';
+  try {
+    await oralService.saveProduction({
+      subject: currentOralSubject,
+      transcript: el.oralTranscript.value,
+      selfAssessment: el.oralSelfAssessment.value
+    });
+    el.oralSaveStatus.textContent = 'Votre production écrite a été sauvegardée sur cet appareil.';
+  } catch (error) {
+    el.oralSaveStatus.textContent = String(error?.message || error);
+  } finally {
+    el.oralSave.disabled = false;
+  }
+}
+
+async function openOralModule() {
+  el.oralPanel.hidden = false;
+  el.questionCard.hidden = true;
+  el.progressLine.hidden = true;
+  el.historyButton.hidden = true;
+  el.historyPanel.hidden = true;
+  el.readingSupport.hidden = true;
+  el.audioSupport.hidden = true;
+  await loadOralSubjects();
+  status('success', 'Expression orale disponible',
+    'Choisissez un sujet, enregistrez votre réponse et sauvegardez votre transcription localement.',
+    oralSubjects.length + ' sujet(s) gratuit(s) au niveau ' + activeLevel + '.');
+}
+
+function closeOralModule() {
+  el.oralPanel.hidden = true;
+  el.questionCard.hidden = false;
+  el.progressLine.hidden = false;
+  el.historyButton.hidden = false;
+}
+
 async function loadBatch() {
   batch = await exercises.getNextBatch({
     moduleId,
@@ -308,13 +502,13 @@ async function refreshModuleStats() {
   updateScore();
 }
 function updateTrainingControls() {
-  const isCE = activeModule === 'CE';
-  const moduleName = activeModule === 'CO' ? 'Compréhension orale' : (isCE ? 'Compréhension écrite' : 'Grammaire');
-  el.exerciseTitle.textContent = moduleName + ' — niveau ' + activeLevel;
+  const names = { GRAM:'Grammaire', CE:'Compréhension écrite', CO:'Compréhension orale', EO:'Expression orale' };
+  el.exerciseTitle.textContent = (names[activeModule] || 'Entraînement') + ' — niveau ' + activeLevel;
   el.levelChip.textContent = activeLevel;
   el.grammarButton?.classList.toggle('selected', activeModule === 'GRAM');
-  el.ceButton?.classList.toggle('selected', isCE);
+  el.ceButton?.classList.toggle('selected', activeModule === 'CE');
   el.coButton?.classList.toggle('selected', activeModule === 'CO');
+  el.eoButton?.classList.toggle('selected', activeModule === 'EO');
   el.b1Button?.classList.toggle('selected', activeLevel === 'B1');
   el.b2Button?.classList.toggle('selected', activeLevel === 'B2');
 }
@@ -323,6 +517,11 @@ async function chooseModule(code) {
   activeModule = code;
   moduleId = moduleIds[code];
   updateTrainingControls();
+  if (code === 'EO') {
+    await openOralModule();
+    return;
+  }
+  closeOralModule();
   await refreshModuleStats();
   await loadBatch();
   const moduleName = code === 'CO' ? 'Compréhension orale' : (code === 'CE' ? 'Compréhension écrite' : 'Grammaire');
@@ -333,6 +532,10 @@ async function chooseModule(code) {
 async function chooseLevel(level) {
   activeLevel = level;
   updateTrainingControls();
+  if (activeModule === 'EO') {
+    await openOralModule();
+    return;
+  }
   await refreshModuleStats();
   await loadBatch();
   const moduleName = activeModule === 'CO' ? 'Compréhension orale' : (activeModule === 'CE' ? 'Compréhension écrite' : 'Grammaire');
@@ -361,10 +564,10 @@ async function start() {
 
     await new SeedService(sqliteDatabase).ensureInitialContent();
     const moduleResult = await sqliteDatabase.query(
-      "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO') AND is_active = 1"
+      "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO') AND is_active = 1"
     );
     for (const row of (moduleResult.values ?? [])) moduleIds[row.code] = row.id;
-    if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO) throw new Error('Les modules Grammaire, Compréhension écrite et Compréhension orale ne sont pas initialisés.');
+    if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO || !moduleIds.EO) throw new Error('Un des modules de formation n’est pas initialisé.');
     moduleId = moduleIds.GRAM;
     activeModule = 'GRAM';
     activeLevel = 'B1';
@@ -378,6 +581,13 @@ async function start() {
     if (el.grammarButton) el.grammarButton.addEventListener('click', () => chooseModule('GRAM').catch(handleModuleError));
     if (el.ceButton) el.ceButton.addEventListener('click', () => chooseModule('CE').catch(handleModuleError));
     if (el.coButton) el.coButton.addEventListener('click', () => chooseModule('CO').catch(handleModuleError));
+    if (el.eoButton) el.eoButton.addEventListener('click', () => chooseModule('EO').catch(handleModuleError));
+    if (el.oralSubject) el.oralSubject.addEventListener('change', displayOralSubject);
+    if (el.oralRecord) el.oralRecord.addEventListener('click', startOralRecording);
+    if (el.oralStop) el.oralStop.addEventListener('click', stopOralRecording);
+    if (el.oralSpeech) el.oralSpeech.addEventListener('click', startOralTranscription);
+    if (el.oralSpeechStop) el.oralSpeechStop.addEventListener('click', stopOralTranscription);
+    if (el.oralSave) el.oralSave.addEventListener('click', saveOralProduction);
     if (el.audioPlay) el.audioPlay.addEventListener('click', playAudio);
     if (el.audioStop) el.audioStop.addEventListener('click', stopAudio);
     if (el.transcriptionButton) el.transcriptionButton.addEventListener('click', () => {
@@ -400,7 +610,7 @@ async function start() {
       }
     });
     status('success', 'Exercices disponibles',
-      'Grammaire B1, Compréhension écrite et Compréhension orale B1-B2 sont disponibles hors ligne.',
+      'Grammaire, Compréhension écrite et orale B1-B2, ainsi que l’Expression orale B1-B2, sont disponibles hors ligne.',
       count + ' tables vérifiées · ' + batch.length + ' questions chargées.');
   } catch (error) {
     console.error('[TCF V4.0] Initialisation impossible', error);
