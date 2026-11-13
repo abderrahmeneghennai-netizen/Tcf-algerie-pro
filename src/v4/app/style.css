@@ -212,3 +212,28 @@
     font-size:17px;
   }
 }
+
+/* Sécurité d'affichage : les intitulés restent dans les cartes */
+.module-grid .module-card{
+  min-width:0;
+  overflow:hidden;
+}
+.module-grid .module-card > span:not(.module-icon){
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+.module-grid .module-card small{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-height:1.35;
+}
