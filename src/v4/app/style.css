@@ -98,3 +98,21 @@
 .canada-banner-copy p:last-child{margin:5px 0 0;color:#536174;font-size:13px;line-height:1.45}
 .canada-accent{position:absolute;right:-20px;top:-38px;width:120px;height:150px;background:#D80621;opacity:.06;transform:rotate(28deg);border-radius:24px}
 @media(max-width:480px){.canada-banner{gap:12px;padding:15px}.canada-flag{width:70px;height:48px}.canada-flag .flag-white{font-size:24px}.canada-banner h2{font-size:19px}.canada-banner-copy p:last-child{font-size:12px}}
+
+
+/* Identités visuelles des quatre parcours TCF */
+.pathways{margin:18px 0 22px;padding:20px;background:#11233d;border:1px solid #263b57;border-radius:16px}
+.pathways-heading h2{margin:5px 0 6px;font-size:20px;color:#f4f6fb}
+.pathways-heading>p:last-child{margin:0;color:#aab8ca;font-size:13px;line-height:1.5}
+.pathway-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.pathway-card{display:flex;align-items:center;gap:12px;min-height:82px;padding:13px;border:1px solid var(--path-border);border-left:4px solid var(--path-color);border-radius:12px;background:linear-gradient(140deg,var(--path-bg),#081426 90%)}
+.pathway-symbol{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:11px;background:var(--path-soft);color:var(--path-color);font-size:23px;font-weight:900;letter-spacing:.02em}
+.pathway-symbol.fleur{font-size:17px;letter-spacing:-.12em}
+.pathway-card h3{margin:0 0 5px;color:#f4f6fb;font-size:14px}
+.pathway-card p{margin:0;color:var(--path-color);font-size:11px;font-weight:700;line-height:1.35}
+.pathway-canada{--path-color:#ff6477;--path-bg:#49232d;--path-border:#a63d4d;--path-soft:rgba(255,100,119,.16)}
+.pathway-quebec{--path-color:#8dbaff;--path-bg:#203b68;--path-border:#426da9;--path-soft:rgba(141,186,255,.16)}
+.pathway-irn{--path-color:#55d6a4;--path-bg:#153e36;--path-border:#287f65;--path-soft:rgba(85,214,164,.16)}
+.pathway-public{--path-color:#d6b5ff;--path-bg:#38294f;--path-border:#7955a6;--path-soft:rgba(214,181,255,.16)}
+.pathways-note{margin:13px 0 0;color:#8192a9;font-size:11px;line-height:1.45}
+@media(max-width:520px){.pathways{padding:14px}.pathway-grid{grid-template-columns:1fr}.pathway-card{min-height:72px}}
