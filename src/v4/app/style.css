@@ -57,3 +57,27 @@
 .audio-controls .audio-stop{width:auto;margin-top:0}
 .audio-transcript{margin-top:14px;padding:14px;border-radius:10px;background:#081426;color:#f4f6fb;line-height:1.7;white-space:pre-line}
 @media(max-width:480px){.audio-support{padding:14px}.audio-controls{display:grid}.audio-controls button{width:100%}}
+
+/* Identité visuelle distincte des compétences TCF */
+.module-grid .module-card{
+  position:relative;min-height:132px;justify-content:flex-end;gap:9px;
+  padding:16px;border:1px solid var(--module-border,#405675);
+  border-left:4px solid var(--module-color,#9aa9bd);
+  background:linear-gradient(145deg,var(--module-bg,#142945),#081426 88%);
+  border-radius:14px;line-height:1.35;transition:transform .18s ease,border-color .18s ease;
+}
+.module-grid .module-card .module-icon{
+  display:grid;place-items:center;width:38px;height:38px;border-radius:11px;
+  background:var(--module-soft,rgba(255,255,255,.12));color:var(--module-color,#fff);
+  font-size:12px;font-weight:900;letter-spacing:.04em;
+}
+.module-grid .module-card small{
+  color:var(--module-color,#dce6f4);font-size:10px;font-weight:800;letter-spacing:.12em;
+}
+.module-grid .module-co{--module-color:#54d6cf;--module-bg:#103b43;--module-border:#287f82;--module-soft:rgba(84,214,207,.15)}
+.module-grid .module-ce{--module-color:#b69aff;--module-bg:#30264d;--module-border:#7153a8;--module-soft:rgba(182,154,255,.16)}
+.module-grid .module-ee{--module-color:#ffbf75;--module-bg:#49301e;--module-border:#a96b32;--module-soft:rgba(255,191,117,.16)}
+.module-grid .module-eo{--module-color:#ff91b5;--module-bg:#49263b;--module-border:#a94f79;--module-soft:rgba(255,145,181,.16)}
+.module-grid .module-gram{--module-color:#79b8ff;--module-bg:#193657;--module-border:#397bb9;--module-soft:rgba(121,184,255,.16)}
+.module-grid .module-card.active-module{border-color:var(--module-color);border-left-width:4px;box-shadow:inset 0 0 0 1px var(--module-border)}
+@media(hover:hover){.module-grid .module-card:hover{transform:translateY(-2px)}}
