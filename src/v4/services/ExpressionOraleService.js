@@ -54,6 +54,22 @@ export class ExpressionOraleService {
     return result.values ?? [];
   }
 
+  async updateProduction(id, transcript, selfAssessment = '') {
+    const productionId = Number(id);
+    if (!Number.isInteger(productionId) || productionId <= 0) {
+      throw new TypeError('Identifiant de production invalide.');
+    }
+    const text = String(transcript ?? '').trim();
+    if (!text) throw new Error('La transcription ne peut pas être vide.');
+    await this.database.run(
+      `UPDATE user_productions
+       SET contenu_texte = ?, autoevaluation_note = ?
+       WHERE id = ? AND module_code = 'EO'`,
+      [text, String(selfAssessment ?? ''), productionId]
+    );
+    return true;
+  }
+
   async deleteProduction(id) {
     const productionId = Number(id);
     if (!Number.isInteger(productionId) || productionId <= 0) {
