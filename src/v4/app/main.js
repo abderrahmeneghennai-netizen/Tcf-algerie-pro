@@ -283,7 +283,7 @@ function updateTrainingControls() {
   const moduleName = activeModule === 'CO' ? 'Compréhension orale' : (isCE ? 'Compréhension écrite' : 'Grammaire');
   el.exerciseTitle.textContent = moduleName + ' — niveau ' + activeLevel;
   el.levelChip.textContent = activeLevel;
-  el.grammarButton?.classList.toggle('selected', !isCE);
+  el.grammarButton?.classList.toggle('selected', activeModule === 'GRAM');
   el.ceButton?.classList.toggle('selected', isCE);
   el.coButton?.classList.toggle('selected', activeModule === 'CO');
   el.b1Button?.classList.toggle('selected', activeLevel === 'B1');
