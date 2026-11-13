@@ -46,3 +46,14 @@
 .reading-support .eyebrow{color:#8a6825;margin:0 0 8px}
 .reading-support h3{margin:0 0 12px;font-size:18px}
 .reading-support p:last-child{margin:0;line-height:1.75;white-space:pre-line;font-size:15px}
+
+
+.audio-support{margin:16px 0;padding:18px;background:#172d49;border:1px solid #e5bd68;border-radius:14px}
+.audio-support .eyebrow{margin:0 0 8px}
+.audio-support h3{margin:0 0 8px;font-size:18px}
+.audio-instruction,.audio-status{color:#c8d5e5;line-height:1.55;font-size:13px}
+.audio-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.audio-controls .primary-button{margin-top:0}
+.audio-controls .audio-stop{width:auto;margin-top:0}
+.audio-transcript{margin-top:14px;padding:14px;border-radius:10px;background:#081426;color:#f4f6fb;line-height:1.7;white-space:pre-line}
+@media(max-width:480px){.audio-support{padding:14px}.audio-controls{display:grid}.audio-controls button{width:100%}}
