@@ -3,10 +3,10 @@
  *
  * Analyse pédagogique indicative, exécutée entièrement sur l'appareil.
  * Aucun texte n'est transmis à Internet.
- * L'interface IA accepte un fournisseur injecté ultérieurement, mais aucun
- * fournisseur distant n'est activé tant qu'une passerelle sécurisée n'existe pas.
  */
 const SPELLING_RULES = [
+  [/\bje\s+sui\b/giu, 'je suis', 'Avec « je », le verbe être s’écrit « suis ».'],
+  [/\ben train de\s+mang\b/giu, 'en train de manger', 'Après « être en train de », on utilise l’infinitif : « manger ».'],
   [/\bsa va\b/giu, 'ça va', 'Confusion fréquente : « ça va ».'],
   [/\bcomme même\b/giu, 'quand même', 'On écrit « quand même ».'],
   [/\bmalgrés\b/giu, 'malgré', '« Malgré » est invariable.'],
@@ -101,9 +101,9 @@ function evaluate(text, subject) {
     }
   }
 
-  const structureLabel = paragraphs >= 2 ? 'Organisation visible' : (sentences.length >= 4 ? 'À structurer' : 'À développer');
+  const structureLabel = paragraphs.length >= 2 ? 'Organisation visible' : (sentences.length >= 4 ? 'À structurer' : 'À développer');
   const structureDetail = paragraphs >= 2
-    ? paragraphs + ' paragraphes repérés.'
+    ? paragraphs.length + ' paragraphes repérés.'
     : 'Séparez l’introduction, les idées principales et la conclusion en paragraphes.';
 
   const connectorLabel = connectorCount >= 2 ? 'Connecteurs présents' : 'À enrichir';
@@ -137,10 +137,6 @@ function buildSuggestions(text, evaluation) {
 }
 
 export class CorrectionEcriteService {
-  constructor(aiProvider = null) {
-    this.aiProvider = aiProvider;
-  }
-
   analyzeLocally({ text, subject = null } = {}) {
     const original = String(text ?? '').trim();
     if (wordCount(original) < 5) {
@@ -174,13 +170,4 @@ export class CorrectionEcriteService {
     };
   }
 
-  async correctWithAI({ text, subject = null, level = 'B1' } = {}) {
-    if (!this.aiProvider || typeof this.aiProvider.correct !== 'function') {
-      return {
-        available: false,
-        reason: 'La correction IA avancée n’est pas activée. Aucun texte n’est envoyé à un service externe.'
-      };
-    }
-    return this.aiProvider.correct({ text: String(text ?? ''), subject, level });
-  }
 }
