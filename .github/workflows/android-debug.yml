@@ -56,7 +56,9 @@ jobs:
             cp "android/app/src/main/res/mipmap-${density}/ic_launcher.png" "android/app/src/main/res/mipmap-${density}/ic_launcher_round.png"
           done
           mkdir -p android/app/src/main/res/drawable-nodpi
-          rsvg-convert --width 432 --height 432 assets/android-icon.svg --output android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          rsvg-convert --width 432 --height 432 assets/android-icon-foreground.svg --output android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          test -s android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           ET.register_namespace("android", "http://schemas.android.com/apk/res/android")
