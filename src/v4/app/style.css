@@ -166,3 +166,14 @@
 .writing-panel .oral-actions button{width:auto}
 .writing-production-editor .writing-answer{min-height:180px}
 @media(max-width:480px){.writing-panel{padding:14px}.writing-word-row{font-size:12px}}
+
+
+/* Assistant de correction écrite local — résultats pédagogiques */
+.writing-correction-panel{margin:16px 0;padding:16px;background:#0d1d33;border:1px solid #e5bd68;border-radius:12px}
+.writing-correction-panel h3{margin:0;font-size:17px}
+.writing-correction-panel h4{margin:16px 0 8px;color:#e5bd68;font-size:14px}
+.writing-correction-note{color:#aab8ca;font-size:12px;line-height:1.55}
+.writing-result-list{display:grid;gap:8px;margin:8px 0;padding-left:20px;color:#e5eaf2;font-size:13px;line-height:1.55}
+.writing-correction-panel .writing-answer{min-height:150px}
+#writingAnalyzeButton{margin-top:4px}
+@media(max-width:480px){.writing-correction-panel{padding:12px}}
