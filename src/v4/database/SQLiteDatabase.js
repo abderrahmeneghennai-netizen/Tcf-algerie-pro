@@ -57,7 +57,9 @@ export class SQLiteDatabase {
       // foreign_keys doit être activé sur chaque connexion.
       await connection.execute('PRAGMA foreign_keys = ON;', false);
       await connection.execute('PRAGMA synchronous = NORMAL;', false);
-      await connection.execute('PRAGMA journal_mode = WAL;', false);
+      // journal_mode = WAL renvoie une ligne de résultat : utiliser query(),
+      // car execute() passe par execSQL() et refuse les requêtes avec résultat.
+      await connection.query('PRAGMA journal_mode = WAL;');
 
       // Le fichier source conserve les PRAGMA d'origine. Ils ont déjà été
       // appliqués ci-dessus; on exécute ici uniquement les CREATE TABLE.
