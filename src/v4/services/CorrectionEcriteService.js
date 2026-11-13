@@ -103,7 +103,7 @@ function evaluate(text, subject) {
 
   const structureLabel = paragraphs >= 2 ? 'Organisation visible' : (sentences.length >= 4 ? 'À structurer' : 'À développer');
   const structureDetail = paragraphs >= 2
-    ? paragraphs.length + ' paragraphes repérés.'
+    ? paragraphs + ' paragraphes repérés.'
     : 'Séparez l’introduction, les idées principales et la conclusion en paragraphes.';
 
   const connectorLabel = connectorCount >= 2 ? 'Connecteurs présents' : 'À enrichir';
