@@ -88,7 +88,7 @@ export class ExerciseService {
     return rows;
   }
 
-  async getById(exerciseId) {
+  async getById(exerciseId, { premiumAccess = false } = {}) {
     const result = await this.database.query(
       `SELECT e.*, p.code AS pack_code, p.is_premium,
               m.code AS module_code, m.name AS module_name
@@ -96,8 +96,9 @@ export class ExerciseService {
        INNER JOIN packs p ON p.id = e.pack_id
        INNER JOIN modules m ON m.id = e.module_id
        WHERE e.id = ? AND e.is_archived = 0
+         AND (? = 1 OR p.is_premium = 0)
        LIMIT 1`,
-      [exerciseId]
+      [exerciseId, premiumAccess ? 1 : 0]
     );
     return result.values?.[0] ?? null;
   }
