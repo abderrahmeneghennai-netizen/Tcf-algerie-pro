@@ -700,7 +700,7 @@ async function toggleOralProductions() {
 
 function countWritingWords(value) {
   const text = String(value ?? '').trim();
-  return text ? text.split(/\\s+/u).filter(Boolean).length : 0;
+  return text ? text.split(/\s+/u).filter(Boolean).length : 0;
 }
 
 function updateWritingWordCount() {
@@ -708,7 +708,7 @@ function updateWritingWordCount() {
   const subject = currentWritingSubject;
   el.writingWordCount.textContent = count + (count > 1 ? ' mots' : ' mot');
   if (subject) {
-    const range = String(subject.nb_mots_attendu || '').match(/(\\d+)\\s*-\\s*(\\d+)/);
+    const range = String(subject.nb_mots_attendu || '').match(/(\d+)\s*-\s*(\d+)/);
     el.writingWordHint.textContent = range
       ? 'Repère indicatif : ' + range[1] + ' à ' + range[2] + ' mots'
       : 'Repère indicatif de longueur';
@@ -728,7 +728,7 @@ async function loadWritingSubjects() {
   writingSubjects.forEach((subject, index) => {
     const option = document.createElement('option');
     option.value = String(subject.id);
-    const task = subject.stable_code.match(/tache(\\d+)/i);
+    const task = subject.stable_code.match(/tache(\d+)/i);
     option.textContent = 'Tâche ' + (task?.[1] || index + 1) + ' — ' + subject.stable_code.split('-').slice(3).join(' ');
     el.writingSubject.append(option);
   });
@@ -741,7 +741,7 @@ function displayWritingSubject() {
   const subject = writingSubjects.find((item) => String(item.id) === el.writingSubject.value);
   if (!subject) return;
   currentWritingSubject = subject;
-  const task = subject.stable_code.match(/tache(\\d+)/i);
+  const task = subject.stable_code.match(/tache(\d+)/i);
   el.writingTaskLabel.textContent = 'Tâche ' + (task?.[1] || '—');
   el.writingPrompt.textContent = subject.consigne;
   el.writingGuidance.textContent = 'Niveau ' + subject.niveau + ' · ' + (subject.nb_mots_attendu || 'Longueur libre') + ' · Le compteur est indicatif.';
