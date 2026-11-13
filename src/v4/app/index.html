@@ -36,6 +36,7 @@
           <span class="control-label">Compétence</span>
           <button class="choice-button selected" id="grammarModuleButton" type="button">Grammaire</button>
           <button class="choice-button" id="ceModuleButton" type="button">Compréhension écrite</button>
+          <button class="choice-button" id="coModuleButton" type="button">Compréhension orale</button>
         </div>
         <div class="control-group">
           <span class="control-label">Niveau</span>
@@ -47,6 +48,18 @@
         <p class="eyebrow">DOCUMENT À LIRE</p>
         <h3 id="readingTitle"></h3>
         <p id="readingText"></p>
+      </section>
+      <section class="audio-support" id="audioSupport" hidden aria-labelledby="audioTitle">
+        <p class="eyebrow">DOCUMENT À ÉCOUTER</p>
+        <h3 id="audioTitle"></h3>
+        <p class="audio-instruction">Écoutez attentivement l’enregistrement avant de répondre.</p>
+        <div class="audio-controls">
+          <button class="primary-button" id="audioPlayButton" type="button">Écouter l’enregistrement</button>
+          <button class="secondary-button audio-stop" id="audioStopButton" type="button">Arrêter</button>
+        </div>
+        <p class="audio-status" id="audioStatus" aria-live="polite">Lecture vocale en français disponible selon les voix installées sur l’appareil.</p>
+        <button class="secondary-button" id="transcriptionButton" type="button" hidden>Afficher la transcription</button>
+        <p class="audio-transcript" id="audioTranscript" hidden></p>
       </section>
       <div class="progress-line">
         <span id="progressLabel">Question 0 / 0</span>
@@ -72,7 +85,7 @@
     <section class="modules">
       <h2>Les compétences TCF</h2>
       <div class="module-grid">
-        <article>Compréhension orale <small>CO</small></article>
+        <article class="active-module">Compréhension orale <small>CO · B1-B2</small></article>
         <article class="active-module">Compréhension écrite <small>CE · B1-B2</small></article>
         <article>Expression écrite <small>EE</small></article>
         <article>Expression orale <small>EO</small></article>
