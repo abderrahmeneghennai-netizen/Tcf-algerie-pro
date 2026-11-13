@@ -113,6 +113,8 @@ let mediaRecorder = null;
 let mediaStream = null;
 let recordedChunks = [];
 let recognition = null;
+let recognitionStopTimer = null;
+let recognitionGeneration = 0;
 let oralStopRequested = false;
 let recordedAudioUrl = null;
 
@@ -445,12 +447,13 @@ function startOralTranscription() {
     return;
   }
   if (recognition) {
-    el.oralSpeechStatus.textContent = 'La transcription est déjà active ou son arrêt est en cours.';
+    el.oralSpeechStatus.textContent = 'La transcription précédente termine encore son arrêt. Patientez un instant puis réessayez.';
     return;
   }
 
   try {
     const instance = new SpeechRecognition();
+    const generation = ++recognitionGeneration;
     recognition = instance;
     const initialText = el.oralTranscript.value.trim();
     const segments = [];
@@ -463,14 +466,14 @@ function startOralTranscription() {
     instance.maxAlternatives = 1;
 
     instance.onstart = () => {
+      if (recognition !== instance || recognitionGeneration !== generation) return;
       el.oralSpeech.disabled = true;
       el.oralSpeechStop.disabled = false;
       el.oralSpeechStatus.textContent = 'Écoute en cours… Parlez clairement en français.';
     };
 
     instance.onresult = (event) => {
-      // On remplace chaque segment par son dernier résultat : aucun doublon
-      // lorsque le moteur transforme une proposition provisoire en résultat final.
+      if (recognition !== instance || recognitionGeneration !== generation) return;
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const result = event.results[i];
         segments[i] = {
@@ -483,12 +486,20 @@ function startOralTranscription() {
     };
 
     instance.onerror = (event) => {
+      if (recognition !== instance || recognitionGeneration !== generation) return;
       errorMessage = event.error || 'erreur du moteur vocal';
       el.oralSpeechStatus.textContent = 'Transcription interrompue : ' + errorMessage + '. Le texte déjà reconnu est conservé.';
     };
 
     instance.onend = () => {
-      if (recognition === instance) recognition = null;
+      // Un ancien moteur peut envoyer onend après le démarrage d'une nouvelle session.
+      // Il ne doit jamais modifier l'interface de la session la plus récente.
+      if (recognition !== instance || recognitionGeneration !== generation) return;
+      if (recognitionStopTimer) {
+        window.clearTimeout(recognitionStopTimer);
+        recognitionStopTimer = null;
+      }
+      recognition = null;
       el.oralSpeech.disabled = false;
       el.oralSpeechStop.disabled = true;
       if (errorMessage) {
@@ -506,6 +517,10 @@ function startOralTranscription() {
     el.oralSpeechStatus.textContent = 'Démarrage de la reconnaissance vocale…';
   } catch (error) {
     recognition = null;
+    if (recognitionStopTimer) {
+      window.clearTimeout(recognitionStopTimer);
+      recognitionStopTimer = null;
+    }
     el.oralSpeech.disabled = false;
     el.oralSpeechStop.disabled = true;
     el.oralSpeechStatus.textContent = 'Impossible de démarrer la transcription : ' + String(error?.message || error);
@@ -526,24 +541,25 @@ function stopOralTranscription() {
   el.oralSpeech.disabled = true;
   el.oralSpeechStatus.textContent = 'Arrêt de la transcription… Le texte reconnu est conservé.';
 
+  // abort() coupe immédiatement la session en cours. Certains WebView ne renvoient
+  // toutefois pas onend : le délai de sécurité libère alors proprement l'interface.
   try {
-    // stop() demande au moteur de terminer proprement le dernier segment.
-    instance.stop();
+    instance.abort();
   } catch (error) {
-    // Si le moteur refuse stop(), abort() coupe immédiatement l'écoute.
-    try { instance.abort(); } catch { /* le moteur est déjà arrêté */ }
+    try { instance.stop(); } catch { /* le moteur est déjà arrêté */ }
   }
 
-  // Certains moteurs intégrés à Android/WebView ne déclenchent pas onend
-  // après stop(). Ce recours garantit la libération de l'interface.
-  window.setTimeout(() => {
-    if (recognition !== instance) return;
-    try { instance.abort(); } catch { /* arrêt déjà effectué */ }
+  if (recognitionStopTimer) window.clearTimeout(recognitionStopTimer);
+  const generation = recognitionGeneration;
+  recognitionStopTimer = window.setTimeout(() => {
+    if (recognition !== instance || recognitionGeneration !== generation) return;
     recognition = null;
+    recognitionGeneration += 1;
+    recognitionStopTimer = null;
     el.oralSpeech.disabled = false;
     el.oralSpeechStop.disabled = true;
     el.oralSpeechStatus.textContent = 'Transcription arrêtée. Le texte déjà reconnu est conservé ; vous pouvez le corriger.';
-  }, 1500);
+  }, 2500);
 }
 
 async function saveOralProduction() {
