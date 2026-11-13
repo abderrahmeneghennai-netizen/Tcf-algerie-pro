@@ -1,28 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="crest" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#173b68"/><stop offset="1" stop-color="#0b203b"/></linearGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f2d38b"/><stop offset="1" stop-color="#c99a45"/></linearGradient>
-  </defs>
-  <rect width="1024" height="1024" rx="190" fill="#f4f7fb"/>
-  <rect x="22" y="22" width="980" height="980" rx="170" fill="#fff" stroke="#dce4ed" stroke-width="14"/>
-  <g transform="translate(62 375) scale(2.5)">
-    <rect x="1" y="1" width="358" height="110" rx="17" fill="#fff" stroke="#dce4ed" stroke-width="2"/>
-    <rect x="1" y="1" width="7" height="110" rx="3" fill="#159447"/>
-    <rect x="352" y="1" width="7" height="110" rx="3" fill="#df3948"/>
-    <g transform="translate(17 13)">
-      <circle cx="43" cy="43" r="41" fill="url(#crest)"/>
-      <circle cx="43" cy="43" r="36" fill="none" stroke="url(#gold)" stroke-width="1.8"/>
-      <path d="M17 58 Q30 51 43 59 Q56 51 69 58 V72 Q56 65 43 73 Q30 65 17 72Z" fill="#fff" stroke="#d8e4f0" stroke-width="1.8" stroke-linejoin="round"/>
-      <path d="M43 59V73" stroke="#b8c8da" stroke-width="1.5"/>
-      <path d="M36 50 L43 27 L50 50 M39 40H47 M37 46H49 M34 52H52" fill="none" stroke="#f1f4f8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M43 27V19" stroke="#df3948" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M24 18 Q31 11 38 17" fill="none" stroke="#159447" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M48 17 Q57 11 64 18" fill="none" stroke="#df3948" stroke-width="2.5" stroke-linecap="round"/>
-    </g>
-    <text x="113" y="53" fill="#102b50" font-family="Arial,sans-serif" font-size="43" font-weight="900" letter-spacing="1">TCF</text>
-    <path d="M112 64H333" stroke="#e5bd68" stroke-width="2"/>
-    <text x="114" y="85" fill="#173b68" font-family="Arial,sans-serif" font-size="17" font-weight="800" letter-spacing="2.1">ALGÉRIE</text>
-    <text x="238" y="85" fill="#df3948" font-family="Arial,sans-serif" font-size="17" font-weight="900" letter-spacing="2.1">PRO</text>
-    <text x="114" y="101" fill="#718198" font-family="Arial,sans-serif" font-size="8.5" font-weight="700" letter-spacing="1.6">PRÉPARATION AUX TESTS DE FRANÇAIS</text>
-  </g>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#173b68"/><stop offset="1" stop-color="#081a30"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5dda0"/><stop offset="1" stop-color="#c99a45"/></linearGradient></defs>
+<rect width="1024" height="1024" rx="220" fill="#f5f7fa"/>
+<rect x="46" y="46" width="932" height="932" rx="190" fill="url(#bg)"/>
+<circle cx="512" cy="430" r="300" fill="none" stroke="url(#gold)" stroke-width="18"/>
+<circle cx="512" cy="430" r="270" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="5"/>
+<path d="M512 170 L462 365 H562 Z" fill="#fff" opacity=".95"/>
+<path d="M462 365 L430 405 H594 L562 365" fill="#fff" opacity=".95"/>
+<path d="M482 300 H542 M470 345 H554 M448 390 H576" stroke="#173b68" stroke-width="10" stroke-linecap="round"/>
+<path d="M512 170 V135" stroke="#df3948" stroke-width="15" stroke-linecap="round"/>
+<path d="M350 520 Q430 475 512 530 Q594 475 674 520 V650 Q590 605 512 660 Q434 605 350 650Z" fill="#fff" stroke="#d8e4f0" stroke-width="12" stroke-linejoin="round"/>
+<path d="M512 530 V660" stroke="#c6d4e3" stroke-width="12"/>
+<path d="M375 545 Q420 530 470 555 M554 555 Q604 530 649 545" fill="none" stroke="#159447" stroke-width="12" stroke-linecap="round"/>
+<path d="M390 690 H634" stroke="url(#gold)" stroke-width="12" stroke-linecap="round"/>
+<text x="512" y="820" text-anchor="middle" font-family="DejaVu Sans,Arial,sans-serif" font-size="124" font-weight="900" letter-spacing="8" fill="#fff">TCF</text>
+<text x="512" y="900" text-anchor="middle" font-family="DejaVu Sans,Arial,sans-serif" font-size="54" font-weight="800" letter-spacing="5" fill="#f5dda0">ALGÉRIE PRO</text>
+<path d="M90 512 H180" stroke="#159447" stroke-width="22" stroke-linecap="round"/>
+<path d="M844 512 H934" stroke="#df3948" stroke-width="22" stroke-linecap="round"/>
 </svg>
