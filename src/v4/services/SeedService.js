@@ -75,6 +75,15 @@ const CO_QUESTIONS = [
 ];
 
 
+const EE_SUBJECTS = [
+  { code:'ee-b1-tache1-message', level:'B1', task:'Tâche 1 — Message', min:60, max:120, prompt:'Vous avez participé à une activité dans votre ville (atelier, sortie ou événement). Écrivez un message à un ami pour raconter cette expérience et lui donner envie d’y participer.', rubric:{respect:'Respecter la consigne et le destinataire',organisation:'Organiser les informations',lexique:'Employer un vocabulaire adapté',correction:'Construire des phrases correctes'} },
+  { code:'ee-b1-tache2-recit', level:'B1', task:'Tâche 2 — Récit et compte rendu', min:120, max:150, prompt:'Vous avez récemment découvert une activité ou un lieu intéressant. Rédigez un court article pour raconter votre expérience, décrire les points positifs et négatifs et expliquer si vous le recommandez.', rubric:{description:'Décrire clairement l’expérience',organisation:'Présenter les idées dans un ordre logique',arguments:'Justifier son avis',correction:'Utiliser des structures adaptées'} },
+  { code:'ee-b1-tache3-opinion', level:'B1', task:'Tâche 3 — Expression d’un point de vue', min:120, max:180, prompt:'Certaines personnes préfèrent étudier à distance, tandis que d’autres choisissent les cours en présentiel. Présentez les deux points de vue puis donnez votre opinion avec des exemples.', rubric:{points:'Présenter les deux points de vue',opinion:'Exprimer une opinion claire',arguments:'Développer des arguments et exemples',coherence:'Relier les idées avec des connecteurs'} },
+  { code:'ee-b2-tache1-message', level:'B2', task:'Tâche 1 — Message', min:60, max:120, prompt:'Votre quartier organise une journée de solidarité. Écrivez un message au responsable pour proposer votre aide, préciser vos disponibilités et suggérer une activité utile.', rubric:{respect:'Répondre à tous les éléments de la consigne',ton:'Adapter le ton au destinataire',precision:'Formuler des propositions précises',correction:'Maîtriser la langue'} },
+  { code:'ee-b2-tache2-article', level:'B2', task:'Tâche 2 — Article argumenté', min:120, max:150, prompt:'Un journal local souhaite publier des témoignages sur le télétravail. Rédigez un article présentant ses avantages et ses limites, puis défendez votre point de vue à l’aide d’exemples.', rubric:{structure:'Construire un texte organisé',nuance:'Présenter avantages et limites',arguments:'Développer des arguments illustrés',lexique:'Employer un vocabulaire précis'} },
+  { code:'ee-b2-tache3-synthese', level:'B2', task:'Tâche 3 — Comparaison et opinion', min:120, max:180, prompt:'Deux opinions s’opposent sur la place des activités culturelles à l’école : certains souhaitent leur donner davantage de temps, d’autres privilégient les matières fondamentales. Présentez les deux positions puis défendez votre avis.', rubric:{synthese:'Restituer les deux positions',organisation:'Structurer une argumentation cohérente',nuance:'Défendre un avis nuancé',correction:'Employer une langue précise'} }
+];
+
 const EO_SUBJECTS = [
   { code:'eo-b1-tache1-presentation', level:'B1', minutes:2, task:'Tâche 1 — Entretien dirigé', prompt:'Présentez-vous : parlez de votre parcours, de vos activités quotidiennes, de vos centres d’intérêt et de vos projets.', words:'Réponse orale personnelle', rubric:{fluidite:'Parler de façon suivie', lexique:'Employer un vocabulaire précis', grammaire:'Construire des phrases correctes', coherence:'Organiser les informations'} },
   { code:'eo-b1-tache2-renseignements', level:'B1', minutes:3, task:'Tâche 2 — Interaction', prompt:'Vous souhaitez vous inscrire à une activité culturelle dans votre ville. Posez des questions sur les horaires, le prix, les conditions d’inscription et le matériel nécessaire.', words:'Questions et relances', rubric:{interaction:'Poser des questions pertinentes', politesse:'Employer des formules adaptées', lexique:'Utiliser le vocabulaire du sujet', correction:'Construire des questions correctes'} },
@@ -93,16 +102,17 @@ export class SeedService {
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['CE', 'Compréhension écrite']);
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['CO', 'Compréhension orale']);
       await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['EO', 'Expression orale']);
+      await db.run("INSERT OR IGNORE INTO modules (code, name, is_active) VALUES (?, ?, 1)", ['EE', 'Expression écrite']);
       await db.run(
         "INSERT OR IGNORE INTO packs (code, name, is_premium, description) VALUES (?, ?, 0, ?)",
         ['pack_free_discovery', 'Pack gratuit — Découverte B1-B2', 'Premiers exercices gratuits de grammaire et de compréhension écrite']
       );
 
-      const moduleRows = await db.query("SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO')");
+      const moduleRows = await db.query("SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO', 'EE')");
       const packResult = await db.query("SELECT id FROM packs WHERE code = ? LIMIT 1", ['pack_free_discovery']);
       const moduleIds = Object.fromEntries((moduleRows.values ?? []).map(row => [row.code, row.id]));
       const packId = packResult.values?.[0]?.id;
-      if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO || !moduleIds.EO || !packId) {
+      if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO || !moduleIds.EO || !moduleIds.EE || !packId) {
         throw new Error('Impossible de préparer les modules gratuits.');
       }
 
@@ -186,6 +196,17 @@ export class SeedService {
           [q.stableId, packId, moduleIds.CO, audioId, q.chapter, q.level,
             q.level === 'B2' ? 4 : 2, (index + 1) * 100, q.prompt,
             JSON.stringify(q.options), q.answer, q.explanation]
+        );
+      }
+
+      for (const subject of EE_SUBJECTS) {
+        await db.run(
+          `INSERT OR IGNORE INTO sujets_expression
+            (pack_id, stable_code, module_id, niveau, consigne, duree_minutes,
+             nb_mots_attendu, grille_evaluation_json, is_archived)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+          [packId, subject.code, moduleIds.EE, subject.level, subject.prompt,
+            0, subject.min + '-' + subject.max + ' mots', JSON.stringify(subject.rubric)]
         );
       }
 
