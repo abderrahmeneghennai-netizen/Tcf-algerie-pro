@@ -40,4 +40,29 @@ export class ExpressionOraleService {
     );
     return true;
   }
+  async listProductions(limit = 100) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 200);
+    const result = await this.database.query(
+      `SELECT id, sujet_code, consigne_originale, module_code, niveau,
+              date_production, contenu_texte, autoevaluation_note
+       FROM user_productions
+       WHERE module_code = 'EO'
+       ORDER BY date_production DESC, id DESC
+       LIMIT ?`,
+      [safeLimit]
+    );
+    return result.values ?? [];
+  }
+
+  async deleteProduction(id) {
+    const productionId = Number(id);
+    if (!Number.isInteger(productionId) || productionId <= 0) {
+      throw new TypeError('Identifiant de production invalide.');
+    }
+    await this.database.run(
+      "DELETE FROM user_productions WHERE id = ? AND module_code = 'EO'",
+      [productionId]
+    );
+    return true;
+  }
 }
