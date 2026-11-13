@@ -35,16 +35,18 @@ export class LicenseService {
       throw new Error('Cette licence est expirée.');
     }
 
-    await this.database.run(
-      `UPDATE app_licenses SET is_active = 0 WHERE is_active = 1`
-    );
+    await this.database.transaction(async (db) => {
+      await db.run(
+        `UPDATE app_licenses SET is_active = 0 WHERE is_active = 1`
+      );
 
-    await this.database.run(
-      `INSERT INTO app_licenses
-        (license_key_text, expiration_date, signature_b64, is_active)
-       VALUES (?, ?, ?, 1)`,
-      [licenseKeyText, expiration.toISOString(), signatureB64]
-    );
+      await db.run(
+        `INSERT INTO app_licenses
+          (license_key_text, expiration_date, signature_b64, is_active)
+         VALUES (?, ?, ?, 1)`,
+        [licenseKeyText, expirationDate, signatureB64]
+      );
+    });
 
     return this.getActiveLicense();
   }
