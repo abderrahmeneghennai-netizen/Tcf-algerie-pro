@@ -984,9 +984,15 @@ async function chooseModule(code) {
   moduleId = moduleIds[code];
   updateTrainingControls();
   if (code === 'EO') {
+    closeWritingModule();
     await openOralModule();
     return;
   }
+  if (code === 'EE') {
+    await openWritingModule();
+    return;
+  }
+  closeWritingModule();
   closeOralModule();
   await refreshModuleStats();
   await loadBatch();
@@ -1000,6 +1006,12 @@ async function chooseLevel(level) {
   updateTrainingControls();
   if (activeModule === 'EO') {
     await openOralModule();
+    return;
+  }
+  if (activeModule === 'EE') {
+    await loadWritingSubjects();
+    status('success', 'Niveau chargé', 'Expression écrite — niveau ' + activeLevel + '.',
+      writingSubjects.length + ' sujet(s) disponible(s) hors ligne.');
     return;
   }
   await refreshModuleStats();
