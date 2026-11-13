@@ -151,6 +151,14 @@
         </select>
         <button class="primary-button" id="oralSaveButton" type="button">Enregistrer ma production</button>
         <p class="oral-save-status" id="oralSaveStatus" aria-live="polite"></p>
+        <button class="secondary-button" id="oralProductionsToggle" type="button">Mes productions sauvegardées</button>
+        <section class="oral-productions" id="oralProductionsPanel" hidden aria-labelledby="oralProductionsTitle">
+          <div class="history-heading">
+            <h3 id="oralProductionsTitle">Mes productions orales</h3>
+            <span>Enregistrées sur cet appareil</span>
+          </div>
+          <div class="history-list" id="oralProductionsList" aria-live="polite"></div>
+        </section>
       </section>
       <div class="progress-line">
         <span id="progressLabel">Question 0 / 0</span>
