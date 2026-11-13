@@ -1,0 +1,83 @@
+/**
+ * TCF ALGÉRIE PRO V4.0 — Service d'expression écrite.
+ * Utilise uniquement les tables et colonnes du schéma SQLite validé.
+ */
+export class ExpressionEcriteService {
+  constructor(database) {
+    this.database = database;
+  }
+
+  async listSubjects(level = 'B1') {
+    if (!['B1', 'B2'].includes(level)) throw new TypeError('Niveau invalide.');
+    const result = await this.database.query(
+      `SELECT s.id, s.stable_code, s.niveau, s.consigne, s.nb_mots_attendu,
+              s.grille_evaluation_json
+       FROM sujets_expression s
+       INNER JOIN packs p ON p.id = s.pack_id
+       INNER JOIN modules m ON m.id = s.module_id
+       WHERE m.code = 'EE' AND s.niveau = ?
+         AND s.is_archived = 0 AND p.is_premium = 0
+       ORDER BY s.stable_code COLLATE NOCASE ASC`,
+      [level]
+    );
+    return result.values ?? [];
+  }
+
+  async saveProduction({ subject, text, selfAssessment = '' }) {
+    if (!subject?.id || !subject?.stable_code || !subject?.consigne || !subject?.niveau) {
+      throw new TypeError('Le sujet écrit sélectionné est invalide.');
+    }
+    const answer = String(text ?? '').trim();
+    if (!answer) throw new Error('Rédigez votre texte avant de le sauvegarder.');
+    await this.database.run(
+      `INSERT INTO user_productions
+        (sujet_id, sujet_code, consigne_originale, module_code, niveau,
+         contenu_texte, audio_path, autoevaluation_note)
+       VALUES (?, ?, ?, 'EE', ?, ?, NULL, ?)`,
+      [subject.id, subject.stable_code, subject.consigne, subject.niveau, answer, String(selfAssessment ?? '')]
+    );
+    return true;
+  }
+
+  async listProductions(limit = 100) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 200);
+    const result = await this.database.query(
+      `SELECT id, sujet_code, consigne_originale, module_code, niveau,
+              date_production, contenu_texte, autoevaluation_note
+       FROM user_productions
+       WHERE module_code = 'EE'
+       ORDER BY date_production DESC, id DESC
+       LIMIT ?`,
+      [safeLimit]
+    );
+    return result.values ?? [];
+  }
+
+  async updateProduction(id, text, selfAssessment = '') {
+    const productionId = Number(id);
+    if (!Number.isInteger(productionId) || productionId <= 0) {
+      throw new TypeError('Identifiant de production invalide.');
+    }
+    const answer = String(text ?? '').trim();
+    if (!answer) throw new Error('Le texte ne peut pas être vide.');
+    await this.database.run(
+      `UPDATE user_productions
+       SET contenu_texte = ?, autoevaluation_note = ?
+       WHERE id = ? AND module_code = 'EE'`,
+      [answer, String(selfAssessment ?? ''), productionId]
+    );
+    return true;
+  }
+
+  async deleteProduction(id) {
+    const productionId = Number(id);
+    if (!Number.isInteger(productionId) || productionId <= 0) {
+      throw new TypeError('Identifiant de production invalide.');
+    }
+    await this.database.run(
+      "DELETE FROM user_productions WHERE id = ? AND module_code = 'EE'",
+      [productionId]
+    );
+    return true;
+  }
+}
