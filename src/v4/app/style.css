@@ -154,3 +154,15 @@
 .oral-production-editor .oral-actions{margin:4px 0 0}
 .oral-production-editor .primary-button,.oral-production-editor .secondary-button{flex:1}
 @media(max-width:480px){.oral-production-editor .oral-actions{display:grid}.oral-production-editor .oral-actions button{width:100%}}
+
+
+/* Atelier d'expression écrite */
+.writing-panel{margin:16px 0;padding:18px;background:#172d49;border:1px solid #e5bd68;border-radius:14px}
+.writing-panel .oral-heading{margin:8px 0 16px}
+.writing-guidance{margin:8px 0 12px;color:#e5bd68;font-size:13px;line-height:1.5}
+.writing-answer{display:block;width:100%;min-height:230px;margin:8px 0;padding:14px;border:1px solid #405675;border-radius:10px;background:#081426;color:#f4f6fb;font:inherit;line-height:1.7;resize:vertical}
+.writing-word-row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px;color:#e5bd68;font-size:13px}
+.writing-panel .oral-select{margin:8px 0 16px}
+.writing-panel .oral-actions button{width:auto}
+.writing-production-editor .writing-answer{min-height:180px}
+@media(max-width:480px){.writing-panel{padding:14px}.writing-word-row{font-size:12px}}
