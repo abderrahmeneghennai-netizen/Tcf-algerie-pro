@@ -1,12 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <rect width="1024" height="1024" rx="220" fill="#ffffff"/>
-  <path d="M0 180 Q0 0 180 0 H844 Q1024 0 1024 180 V844 Q1024 1024 844 1024 H180 Q0 1024 0 844Z" fill="none" stroke="#e7edf4" stroke-width="20"/>
-  <path d="M125 210 V814" stroke="#159447" stroke-width="34" stroke-linecap="round"/>
-  <path d="M899 210 V814" stroke="#e43d45" stroke-width="34" stroke-linecap="round"/>
-  <text x="512" y="475" text-anchor="middle" font-family="DejaVu Sans,Arial,sans-serif" font-size="278" font-weight="800" letter-spacing="-18" fill="#102b50">TCF</text>
-  <path d="M290 650 Q400 600 512 665 Q624 600 734 650 V785 Q624 735 512 800 Q400 735 290 785Z" fill="#f4f7fb" stroke="#102b50" stroke-width="24" stroke-linejoin="round"/>
-  <path d="M512 665 V800" stroke="#102b50" stroke-width="18"/>
-  <path d="M430 650 L512 540 L594 650" fill="none" stroke="#e43d45" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M512 540 V650 M475 592 H549 M490 620 H534" stroke="#e43d45" stroke-width="16" stroke-linecap="round"/>
-  <text x="512" y="900" text-anchor="middle" font-family="DejaVu Sans,Arial,sans-serif" font-size="82" font-weight="800" letter-spacing="5" fill="#102b50">ALGÉRIE PRO</text>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#edf2f8"/></linearGradient>
+ <linearGradient id="navy" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#193e6c"/><stop offset="1" stop-color="#081d37"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4d997"/><stop offset="1" stop-color="#c79740"/></linearGradient>
+</defs>
+<rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+<rect x="30" y="30" width="964" height="964" rx="195" fill="none" stroke="#d8e1ec" stroke-width="18"/>
+<path d="M78 190V834" stroke="#159447" stroke-width="26" stroke-linecap="round"/>
+<path d="M946 190V834" stroke="#df3948" stroke-width="26" stroke-linecap="round"/>
+<circle cx="512" cy="425" r="300" fill="url(#navy)"/>
+<circle cx="512" cy="425" r="274" fill="none" stroke="url(#gold)" stroke-width="13"/>
+<path d="M320 575Q416 520 512 580Q608 520 704 575V680Q608 625 512 690Q416 625 320 680Z" fill="#fff" stroke="#dce6f1" stroke-width="18" stroke-linejoin="round"/>
+<path d="M512 580V690" stroke="#a9bacd" stroke-width="14"/>
+<path d="M445 530L512 300L579 530M473 435H551M458 480H566M430 545H594" fill="none" stroke="#fff" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M512 300V258" stroke="#df3948" stroke-width="18" stroke-linecap="round"/>
+<path d="M360 275Q407 224 458 264" fill="none" stroke="#159447" stroke-width="20" stroke-linecap="round"/>
+<path d="M566 264Q617 224 664 275" fill="none" stroke="#df3948" stroke-width="20" stroke-linecap="round"/>
+<text x="512" y="835" text-anchor="middle" font-family="Arial,sans-serif" font-size="115" font-weight="900" letter-spacing="5" fill="#102b50">TCF</text>
+<path d="M245 875H779" stroke="#d2a653" stroke-width="9" stroke-linecap="round"/>
+<text x="512" y="940" text-anchor="middle" font-family="Arial,sans-serif" font-size="57" font-weight="900" letter-spacing="9" fill="#173b68">ALGÉRIE <tspan fill="#df3948">PRO</tspan></text>
 </svg>
