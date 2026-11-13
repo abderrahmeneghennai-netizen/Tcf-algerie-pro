@@ -449,7 +449,7 @@ async function saveOralProduction() {
       transcript: el.oralTranscript.value,
       selfAssessment: el.oralSelfAssessment.value
     });
-    el.oralSaveStatus.textContent = 'Votre production écrite a été sauvegardée sur cet appareil.';
+    el.oralSaveStatus.textContent = 'Votre production orale a été sauvegardée sur cet appareil.';
   } catch (error) {
     el.oralSaveStatus.textContent = String(error?.message || error);
   } finally {
