@@ -81,3 +81,20 @@
 .module-grid .module-gram{--module-color:#79b8ff;--module-bg:#193657;--module-border:#397bb9;--module-soft:rgba(121,184,255,.16)}
 .module-grid .module-card.active-module{border-color:var(--module-color);border-left-width:4px;box-shadow:inset 0 0 0 1px var(--module-border)}
 @media(hover:hover){.module-grid .module-card:hover{transform:translateY(-2px)}}
+
+/* Identité rouge et blanc réservée au parcours TCF Canada */
+.canada-banner{
+  position:relative;display:flex;align-items:center;gap:16px;overflow:hidden;
+  margin:18px 0;padding:18px 20px;background:#fff;color:#172238;
+  border:1px solid #e5eaf0;border-left:6px solid #D80621;border-radius:16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12)
+}
+.canada-flag{display:grid;grid-template-columns:1fr 1.7fr 1fr;width:86px;height:58px;flex:none;overflow:hidden;border:1px solid #e7e7e7;border-radius:5px;background:#fff}
+.canada-flag .flag-red{background:#D80621}
+.canada-flag .flag-white{display:grid;place-items:center;color:#D80621;font-size:29px;line-height:1}
+.canada-banner-copy{position:relative;z-index:1}
+.canada-eyebrow{margin:0 0 4px;color:#D80621;font-size:10px;font-weight:900;letter-spacing:.14em}
+.canada-banner h2{margin:0;color:#172238;font-size:22px;letter-spacing:.01em}
+.canada-banner-copy p:last-child{margin:5px 0 0;color:#536174;font-size:13px;line-height:1.45}
+.canada-accent{position:absolute;right:-20px;top:-38px;width:120px;height:150px;background:#D80621;opacity:.06;transform:rotate(28deg);border-radius:24px}
+@media(max-width:480px){.canada-banner{gap:12px;padding:15px}.canada-flag{width:70px;height:48px}.canada-flag .flag-white{font-size:24px}.canada-banner h2{font-size:19px}.canada-banner-copy p:last-child{font-size:12px}}
