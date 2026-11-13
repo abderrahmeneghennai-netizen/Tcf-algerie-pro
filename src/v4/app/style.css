@@ -116,3 +116,21 @@
 .pathway-public{--path-color:#d6b5ff;--path-bg:#38294f;--path-border:#7955a6;--path-soft:rgba(214,181,255,.16)}
 .pathways-note{margin:13px 0 0;color:#8192a9;font-size:11px;line-height:1.45}
 @media(max-width:520px){.pathways{padding:14px}.pathway-grid{grid-template-columns:1fr}.pathway-card{min-height:72px}}
+
+
+/* Atelier d'expression orale — enregistrement local et transcription facultative */
+.oral-panel{margin:16px 0;padding:18px;background:#172d49;border:1px solid #e5bd68;border-radius:14px}
+.oral-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 16px}
+.oral-heading h3{margin:0;font-size:19px}
+.oral-select,.oral-transcription textarea{display:block;width:100%;margin:8px 0 16px;padding:13px;border:1px solid #405675;border-radius:10px;background:#081426;color:#f4f6fb;font:inherit;line-height:1.5}
+.oral-prompt{margin:14px 0;padding:16px;background:#081426;border:1px solid #405675;border-left:4px solid #e5bd68;border-radius:11px}
+.oral-prompt .eyebrow{margin:0 0 9px}
+.oral-prompt p:last-child{margin:0;color:#f4f6fb;line-height:1.7}
+.oral-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.oral-actions button{width:auto;margin:0}
+#oralStopButton,#oralSpeechStopButton{min-width:125px}
+#oralPlayback{display:block;width:100%;margin:14px 0}
+.oral-transcription{margin:18px 0;padding-top:16px;border-top:1px solid #405675}
+.oral-transcription textarea{resize:vertical;min-height:120px}
+.oral-save-status{min-height:22px;color:#e5bd68;line-height:1.5}
+@media(max-width:480px){.oral-panel{padding:14px}.oral-actions{display:grid}.oral-actions button{width:100%}.oral-heading h3{font-size:17px}}
