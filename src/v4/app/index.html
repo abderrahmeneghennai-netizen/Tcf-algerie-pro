@@ -15,13 +15,35 @@
     <section class="welcome">
       <p class="eyebrow">NOUVELLE GÉNÉRATION</p>
       <h1>Votre préparation TCF, organisée et sauvegardée hors ligne.</h1>
-      <p class="intro">La base de données locale et le moteur de l'application sont en cours d'initialisation.</p>
+      <p class="intro">Entraînez-vous progressivement et retrouvez vos résultats sur votre appareil.</p>
     </section>
     <section class="status-card" aria-live="polite">
       <div class="status-heading"><span class="status-dot" id="statusDot"></span><h2 id="statusTitle">Initialisation en cours…</h2></div>
       <p id="statusMessage">Préparation de la base SQLite locale.</p>
       <p class="technical" id="technicalMessage">Vérification du démarrage V4.0.</p>
     </section>
+
+    <section class="exercise-panel" id="exercisePanel" hidden aria-labelledby="exerciseTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ENTRAÎNEMENT GRATUIT</p>
+          <h2 id="exerciseTitle">Grammaire — niveau B1</h2>
+        </div>
+        <span class="level-chip">B1</span>
+      </div>
+      <div class="progress-line">
+        <span id="progressLabel">Question 0 / 0</span>
+        <span id="scoreLabel">0 bonne(s) réponse(s) sur 0</span>
+      </div>
+      <article class="question-card">
+        <p class="chapter" id="chapterLabel"></p>
+        <h3 id="questionText">Chargement de la question…</h3>
+        <div class="answers" id="answers" aria-label="Choix de réponse"></div>
+        <p class="feedback" id="feedback" hidden aria-live="polite"></p>
+        <button class="primary-button" id="nextButton" type="button" hidden>Question suivante</button>
+      </article>
+    </section>
+
     <section class="modules">
       <h2>Les compétences TCF</h2>
       <div class="module-grid">
@@ -29,7 +51,7 @@
         <article>Compréhension écrite <small>CE</small></article>
         <article>Expression écrite <small>EE</small></article>
         <article>Expression orale <small>EO</small></article>
-        <article>Grammaire <small>GRAM</small></article>
+        <article class="active-module">Grammaire <small>GRAM · B1</small></article>
       </div>
     </section>
     <footer>TCF ALGÉRIE PRO V4.0 · Application indépendante de préparation</footer>
