@@ -26,11 +26,19 @@ const el = {
   levelChip: document.querySelector('#levelChip'),
   grammarButton: document.querySelector('#grammarModuleButton'),
   ceButton: document.querySelector('#ceModuleButton'),
+  coButton: document.querySelector('#coModuleButton'),
   b1Button: document.querySelector('#b1LevelButton'),
   b2Button: document.querySelector('#b2LevelButton'),
   readingSupport: document.querySelector('#readingSupport'),
   readingTitle: document.querySelector('#readingTitle'),
-  readingText: document.querySelector('#readingText')
+  readingText: document.querySelector('#readingText'),
+  audioSupport: document.querySelector('#audioSupport'),
+  audioTitle: document.querySelector('#audioTitle'),
+  audioPlay: document.querySelector('#audioPlayButton'),
+  audioStop: document.querySelector('#audioStopButton'),
+  audioStatus: document.querySelector('#audioStatus'),
+  transcriptionButton: document.querySelector('#transcriptionButton'),
+  audioTranscript: document.querySelector('#audioTranscript')
 };
 const exercises = new ExerciseService(sqliteDatabase);
 const progress = new ProgressService(sqliteDatabase);
@@ -45,6 +53,7 @@ let answered = false;
 let correct = 0;
 let attempted = 0;
 let startedAt = 0;
+let currentAudio = null;
 
 function status(kind, heading, detail, diagnostic = '') {
   el.title.textContent = heading;
@@ -58,9 +67,34 @@ function normalize(value) {
 function updateScore() {
   el.score.textContent = correct + ' bonne(s) réponse(s) sur ' + attempted;
 }
+function stopAudio() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if (el.audioStatus && currentAudio) el.audioStatus.textContent = 'Lecture arrêtée.';
+}
+
+function playAudio() {
+  if (!currentAudio?.transcription) return;
+  if (!('speechSynthesis' in window) || typeof window.SpeechSynthesisUtterance !== 'function') {
+    el.audioStatus.textContent = 'La lecture vocale n’est pas disponible sur cet appareil. Vérifiez que le moteur de synthèse vocale français est installé.';
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new window.SpeechSynthesisUtterance(currentAudio.transcription);
+  utterance.lang = 'fr-FR';
+  utterance.rate = activeLevel === 'B2' ? 0.96 : 0.91;
+  utterance.pitch = 1;
+  const frenchVoice = window.speechSynthesis.getVoices().find((voice) => /^fr([_-]|$)/i.test(voice.lang));
+  if (frenchVoice) utterance.voice = frenchVoice;
+  utterance.onstart = () => { el.audioStatus.textContent = 'Lecture en cours…'; };
+  utterance.onend = () => { el.audioStatus.textContent = 'Écoute terminée. Vous pouvez réécouter le document.'; };
+  utterance.onerror = () => { el.audioStatus.textContent = 'La lecture a échoué. Vérifiez la disponibilité de la voix française sur votre appareil.'; };
+  window.speechSynthesis.speak(utterance);
+}
+
 async function displayQuestion() {
   const item = batch[index];
   if (!item) return;
+  stopAudio();
   answered = false;
   startedAt = Date.now();
   el.chapter.textContent = item.chapitre + ' · Difficulté ' + item.difficulte + '/5';
@@ -75,6 +109,30 @@ async function displayQuestion() {
     el.readingTitle.textContent = '';
     el.readingText.textContent = '';
   }
+
+  if (activeModule === 'CO' && item.audio_id) {
+    currentAudio = await content.getAudio(item.audio_id);
+    if (!currentAudio?.transcription) throw new Error('Le support audio de compréhension orale est introuvable.');
+    const audioTitles = {
+      'co-b1-dialogue-gare': 'À la gare : acheter un billet',
+      'co-b1-message-centre-sportif': 'Message du centre sportif',
+      'co-b2-interview-teletravail': 'Interview : organiser le télétravail',
+      'co-b2-reportage-mobilite': 'Reportage : un nouveau plan de mobilité'
+    };
+    el.audioTitle.textContent = audioTitles[currentAudio.stable_code] || 'Document de compréhension orale';
+    el.audioTranscript.textContent = currentAudio.transcription;
+    el.audioTranscript.hidden = true;
+    el.transcriptionButton.hidden = true;
+    el.audioStatus.textContent = 'Prêt à écouter. La lecture utilise la voix française installée sur votre appareil.';
+    el.audioSupport.hidden = false;
+  } else {
+    currentAudio = null;
+    el.audioSupport.hidden = true;
+    el.audioTranscript.textContent = '';
+    el.audioTranscript.hidden = true;
+    el.transcriptionButton.hidden = true;
+  }
+
   el.question.textContent = item.enonce;
   el.progress.textContent = 'Question ' + (index + 1) + ' / ' + batch.length;
   el.feedback.hidden = true;
@@ -139,6 +197,7 @@ async function submitAnswer(item, selected, selectedButton) {
     (isCorrect ? 'Bonne réponse ! ' : 'Pas tout à fait. La bonne réponse est : ' + item.bonne_reponse + '. ') +
     item.explication + (saved ? '' : ' Attention : cette tentative n’a pas pu être enregistrée.');
   el.feedback.hidden = false;
+  if (activeModule === 'CO' && el.transcriptionButton) el.transcriptionButton.hidden = false;
   el.next.hidden = false;
   el.next.textContent = index + 1 < batch.length ? 'Question suivante' : 'Charger la suite';
   updateScore();
@@ -163,7 +222,8 @@ async function showHistory() {
         const heading = document.createElement('div');
         heading.className = 'history-entry-heading';
         const title = document.createElement('h3');
-        title.textContent = (snapshot.module_code === 'CE' ? 'Compréhension écrite · ' : '') + (snapshot.chapitre || 'Exercice');
+        const moduleLabel = snapshot.module_code === 'CO' ? 'Compréhension orale · ' : (snapshot.module_code === 'CE' ? 'Compréhension écrite · ' : '');
+        title.textContent = moduleLabel + (snapshot.chapitre || 'Exercice');
         const result = document.createElement('span');
         result.className = entry.est_correct ? 'history-result good' : 'history-result wrong';
         result.textContent = entry.est_correct ? 'Correcte' : 'À revoir';
@@ -220,10 +280,12 @@ async function refreshModuleStats() {
 }
 function updateTrainingControls() {
   const isCE = activeModule === 'CE';
-  el.exerciseTitle.textContent = (isCE ? 'Compréhension écrite' : 'Grammaire') + ' — niveau ' + activeLevel;
+  const moduleName = activeModule === 'CO' ? 'Compréhension orale' : (isCE ? 'Compréhension écrite' : 'Grammaire');
+  el.exerciseTitle.textContent = moduleName + ' — niveau ' + activeLevel;
   el.levelChip.textContent = activeLevel;
   el.grammarButton?.classList.toggle('selected', !isCE);
   el.ceButton?.classList.toggle('selected', isCE);
+  el.coButton?.classList.toggle('selected', activeModule === 'CO');
   el.b1Button?.classList.toggle('selected', activeLevel === 'B1');
   el.b2Button?.classList.toggle('selected', activeLevel === 'B2');
 }
@@ -234,8 +296,9 @@ async function chooseModule(code) {
   updateTrainingControls();
   await refreshModuleStats();
   await loadBatch();
+  const moduleName = code === 'CO' ? 'Compréhension orale' : (code === 'CE' ? 'Compréhension écrite' : 'Grammaire');
   status('success', 'Module chargé',
-    (code === 'CE' ? 'Compréhension écrite' : 'Grammaire') + ' — niveau ' + activeLevel + ' : exercices disponibles hors ligne.',
+    moduleName + ' — niveau ' + activeLevel + ' : exercices disponibles hors ligne.',
     batch.length + ' question(s) chargée(s).');
 }
 async function chooseLevel(level) {
@@ -243,8 +306,9 @@ async function chooseLevel(level) {
   updateTrainingControls();
   await refreshModuleStats();
   await loadBatch();
+  const moduleName = activeModule === 'CO' ? 'Compréhension orale' : (activeModule === 'CE' ? 'Compréhension écrite' : 'Grammaire');
   status('success', 'Niveau chargé',
-    (activeModule === 'CE' ? 'Compréhension écrite' : 'Grammaire') + ' — niveau ' + activeLevel + '.',
+    moduleName + ' — niveau ' + activeLevel + '.',
     batch.length + ' question(s) disponibles hors ligne.');
 }
 function handleModuleError(error) {
@@ -268,10 +332,10 @@ async function start() {
 
     await new SeedService(sqliteDatabase).ensureInitialContent();
     const moduleResult = await sqliteDatabase.query(
-      "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE') AND is_active = 1"
+      "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO') AND is_active = 1"
     );
     for (const row of (moduleResult.values ?? [])) moduleIds[row.code] = row.id;
-    if (!moduleIds.GRAM || !moduleIds.CE) throw new Error('Les modules Grammaire et Compréhension écrite ne sont pas initialisés.');
+    if (!moduleIds.GRAM || !moduleIds.CE || !moduleIds.CO) throw new Error('Les modules Grammaire, Compréhension écrite et Compréhension orale ne sont pas initialisés.');
     moduleId = moduleIds.GRAM;
     activeModule = 'GRAM';
     activeLevel = 'B1';
@@ -284,6 +348,13 @@ async function start() {
     if (el.historyButton) el.historyButton.addEventListener('click', showHistory);
     if (el.grammarButton) el.grammarButton.addEventListener('click', () => chooseModule('GRAM').catch(handleModuleError));
     if (el.ceButton) el.ceButton.addEventListener('click', () => chooseModule('CE').catch(handleModuleError));
+    if (el.coButton) el.coButton.addEventListener('click', () => chooseModule('CO').catch(handleModuleError));
+    if (el.audioPlay) el.audioPlay.addEventListener('click', playAudio);
+    if (el.audioStop) el.audioStop.addEventListener('click', stopAudio);
+    if (el.transcriptionButton) el.transcriptionButton.addEventListener('click', () => {
+      el.audioTranscript.hidden = !el.audioTranscript.hidden;
+      el.transcriptionButton.textContent = el.audioTranscript.hidden ? 'Afficher la transcription' : 'Masquer la transcription';
+    });
     if (el.b1Button) el.b1Button.addEventListener('click', () => chooseLevel('B1').catch(handleModuleError));
     if (el.b2Button) el.b2Button.addEventListener('click', () => chooseLevel('B2').catch(handleModuleError));
     await loadBatch();
@@ -300,7 +371,7 @@ async function start() {
       }
     });
     status('success', 'Exercices disponibles',
-      'Grammaire B1 et Compréhension écrite B1-B2 sont disponibles hors ligne.',
+      'Grammaire B1, Compréhension écrite et Compréhension orale B1-B2 sont disponibles hors ligne.',
       count + ' tables vérifiées · ' + batch.length + ' questions chargées.');
   } catch (error) {
     console.error('[TCF V4.0] Initialisation impossible', error);
