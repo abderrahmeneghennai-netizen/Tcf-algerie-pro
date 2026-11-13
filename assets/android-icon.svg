@@ -2,13 +2,13 @@
   <circle cx="512" cy="350" r="250" fill="#102b50"/>
   <circle cx="512" cy="350" r="226" fill="none" stroke="url(#gold)" stroke-width="13"/>
   <circle cx="512" cy="350" r="210" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="4"/>
-  <path d="M350 415 Q430 365 512 425 Q594 365 674 415 V510 Q590 462 512 520 Q434 462 350 510Z" fill="#fff" stroke="#d8e4f0" stroke-width="10" stroke-linejoin="round"/>
-  <path d="M512 425V520" stroke="#b8c8da" stroke-width="9"/>
-  <path d="M452 350 L512 155 L572 350 M480 280H544 M466 320H558 M445 365H579" fill="none" stroke="#f1f4f8" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M350 415 Q430 365 512 425 Q594 365 674 415 V510 Q590 462 512 520 Q434 462 350 510Z" fill="#fff" stroke="url(#gold)" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M512 425V520" stroke="url(#gold)" stroke-width="9"/>
+  <path d="M452 350 L512 155 L572 350 M480 280H544 M466 320H558 M445 365H579" fill="none" stroke="url(#gold)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M512 155V118" stroke="#df3948" stroke-width="14" stroke-linecap="round"/>
   <path d="M395 190 Q440 145 480 185" fill="none" stroke="#159447" stroke-width="15" stroke-linecap="round"/>
   <path d="M544 185 Q590 145 630 190" fill="none" stroke="#df3948" stroke-width="15" stroke-linecap="round"/>
 </g>
 <text x="512" y="720" text-anchor="middle" fill="#102b50" font-family="Arial,sans-serif" font-size="160" font-weight="900" letter-spacing="8">TCF</text>
 <path d="M190 760H834" stroke="url(#gold)" stroke-width="12" stroke-linecap="round"/>
-<text x="512" y="855" text-anchor="middle" fill="#173b68" font-family="Arial,sans-serif" font-size="76" font-weight="900" letter-spacing="7">ALGÉRIE PRO</text></svg>
+<text x="512" y="855" text-anchor="middle" fill="#c99a45" font-family="Arial,sans-serif" font-size="76" font-weight="900" letter-spacing="7">ALGÉRIE PRO</text></svg>
