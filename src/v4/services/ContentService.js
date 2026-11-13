@@ -8,7 +8,7 @@ export class ContentService {
 
   async getWrittenSupport(id, { premiumAccess = false } = {}) {
     const result = await this.database.query(
-      `SELECT id, pack_id, stable_code, titre, texte_contenu, source
+      `SELECT s.id, s.pack_id, s.stable_code, s.titre, s.texte_contenu, s.source
        FROM supports_ecrits s
        INNER JOIN packs p ON p.id = s.pack_id
        WHERE s.id = ? AND s.is_archived = 0
@@ -21,8 +21,8 @@ export class ContentService {
 
   async getAudio(id, { premiumAccess = false } = {}) {
     const result = await this.database.query(
-      `SELECT id, pack_id, stable_code, chemin_fichier,
-              duree_secondes, transcription
+      `SELECT a.id, a.pack_id, a.stable_code, a.chemin_fichier,
+              a.duree_secondes, a.transcription
        FROM fichiers_audio a
        INNER JOIN packs p ON p.id = a.pack_id
        WHERE a.id = ? AND a.is_archived = 0
@@ -35,8 +35,8 @@ export class ContentService {
 
   async getExpressionSubject(id, { premiumAccess = false } = {}) {
     const result = await this.database.query(
-      `SELECT id, pack_id, stable_code, module_id, niveau, consigne,
-              duree_minutes, nb_mots_attendu, grille_evaluation_json
+      `SELECT s.id, s.pack_id, s.stable_code, s.module_id, s.niveau, s.consigne,
+              s.duree_minutes, s.nb_mots_attendu, s.grille_evaluation_json
        FROM sujets_expression s
        INNER JOIN packs p ON p.id = s.pack_id
        WHERE s.id = ? AND s.is_archived = 0
