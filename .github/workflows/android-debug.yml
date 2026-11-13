@@ -20,8 +20,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Installer l'outil de génération d'icône
-        run: sudo apt-get update && sudo apt-get install -y librsvg2-bin
+      - name: Installer les outils de génération et contrôle des icônes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          python3 -m pip install --user pillow
 
       - name: Installer Java
         uses: actions/setup-java@v4
@@ -40,25 +43,32 @@ jobs:
 
       - name: Autoriser le microphone
         run: |
-          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
+          sed -i '/<manifest/a\\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' android/app/src/main/AndroidManifest.xml
 
       - name: Synchroniser Android
         run: npx cap sync android
 
-      - name: Générer les icônes Android après synchronisation
+      - name: Générer et contrôler les icônes Android
         run: |
-          mkdir -p android/app/src/main/res/mipmap-anydpi-v26
+          set -euo pipefail
+
+          RES="android/app/src/main/res"
+
+          # Utiliser des PNG classiques dans toutes les densités.
+          # Cela évite le rendu adaptatif défectueux constaté sur certains lanceurs Samsung.
           for spec in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
-            density=${spec%%:*}
-            size=${spec##*:}
-            mkdir -p "android/app/src/main/res/mipmap-${density}"
-            rsvg-convert --width "${size}" --height "${size}" assets/android-icon.svg --output "android/app/src/main/res/mipmap-${density}/ic_launcher.png"
-            cp "android/app/src/main/res/mipmap-${density}/ic_launcher.png" "android/app/src/main/res/mipmap-${density}/ic_launcher_round.png"
+            density="${spec%%:*}"
+            size="${spec##*:}"
+            mkdir -p "$RES/mipmap-${density}"
+            rsvg-convert --format png --width "$size" --height "$size" assets/android-icon.svg --output "$RES/mipmap-${density}/ic_launcher.png"
+            cp "$RES/mipmap-${density}/ic_launcher.png" "$RES/mipmap-${density}/ic_launcher_round.png"
           done
-          mkdir -p android/app/src/main/res/drawable-nodpi
-          rsvg-convert --width 432 --height 432 assets/android-icon-foreground.svg --output android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
-          test -s android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
-          test -s android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+          # Supprimer les définitions adaptatives : Android utilisera les PNG vérifiés.
+          rm -f "$RES/mipmap-anydpi-v26/ic_launcher.xml" "$RES/mipmap-anydpi-v26/ic_launcher_round.xml"
+          rm -f "$RES/drawable-nodpi/ic_launcher_foreground.png"
+
+          # Déclarer explicitement les deux icônes dans le manifeste.
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           ET.register_namespace("android", "http://schemas.android.com/apk/res/android")
@@ -73,14 +83,29 @@ jobs:
           application.set(android + "roundIcon", "@mipmap/ic_launcher_round")
           tree.write(path, encoding="utf-8", xml_declaration=True)
           PY
-          cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-              <background android:drawable="@android:color/white" />
-              <foreground android:drawable="@drawable/ic_launcher_foreground" />
-          </adaptive-icon>
-          EOF
-          cp android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+
+          # Vérifier que chaque PNG existe, est lisible, non vide et contient bien le logo.
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageChops
+          root = Path("android/app/src/main/res")
+          for density, size in [("mdpi",48),("hdpi",72),("xhdpi",96),("xxhdpi",144),("xxxhdpi",192)]:
+              for filename in ["ic_launcher.png", "ic_launcher_round.png"]:
+                  path = root / f"mipmap-{density}" / filename
+                  if not path.is_file() or path.stat().st_size < 1000:
+                      raise SystemExit(f"Icône absente ou trop petite : {path}")
+                  with Image.open(path) as im:
+                      im.load()
+                      if im.size != (size, size):
+                          raise SystemExit(f"Mauvaise dimension pour {path}: {im.size}")
+                      rgb = im.convert("RGB")
+                      if ImageChops.difference(rgb, Image.new("RGB", rgb.size, "white")).getbbox() is None:
+                          raise SystemExit(f"Icône entièrement blanche : {path}")
+              print(f"OK icônes {density}: {size}x{size}")
+          PY
+
+          grep -q 'android:icon="@mipmap/ic_launcher"' "$RES/../AndroidManifest.xml"
+          grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' "$RES/../AndroidManifest.xml"
 
       - name: Construire APK
         run: |
