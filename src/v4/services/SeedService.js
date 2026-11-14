@@ -188,6 +188,17 @@ export class SeedService {
         const q = CO_QUESTIONS[index];
         const audioId = audioIds[q.audio];
         if (!audioId) throw new Error('Audio de compréhension orale introuvable : ' + q.audio);
+
+        // Répare les anciennes installations où la question existait déjà
+        // mais où audio_id n'avait pas été renseigné. Aucune table ni donnée
+        // utilisateur n'est supprimée ou recréée.
+        await db.run(
+          `UPDATE exercices
+           SET audio_id = ?
+           WHERE stable_id = ? AND module_id = ? AND audio_id IS NULL`,
+          [audioId, q.stableId, moduleIds.CO]
+        );
+
         await db.run(
           `INSERT OR IGNORE INTO exercices
             (stable_id, pack_id, module_id, audio_id, chapitre, niveau,
