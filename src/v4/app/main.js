@@ -478,7 +478,7 @@ function startOralTranscription() {
         segments[i] = (result[0]?.transcript || '').trim();
       }
 
-      const recognizedText = segments.filter(Boolean).join(' ').replace(/\\s+/g, ' ').trim();
+      const recognizedText = segments.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
       const combinedText = [initialText, recognizedText].filter(Boolean).join(' ').trim();
       el.oralTranscript.value = combinedText;
 
