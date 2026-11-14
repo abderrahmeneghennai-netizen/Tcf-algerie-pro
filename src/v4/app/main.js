@@ -470,15 +470,24 @@ function startOralTranscription() {
 
     instance.onresult = (event) => {
       if (recognition !== instance || recognitionGeneration !== generation) return;
-      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+
+      // Reconstruire le texte depuis tous les résultats évite de perdre les
+      // segments provisoires ou finaux lorsque Android envoie plusieurs événements.
+      for (let i = 0; i < event.results.length; i += 1) {
         const result = event.results[i];
-        segments[i] = {
-          text: (result[0]?.transcript || '').trim(),
-          final: Boolean(result.isFinal)
-        };
+        segments[i] = (result[0]?.transcript || '').trim();
       }
-      const recognizedText = segments.map((part) => part?.text || '').filter(Boolean).join(' ');
-      el.oralTranscript.value = [initialText, recognizedText].filter(Boolean).join(' ').trim();
+
+      const recognizedText = segments.filter(Boolean).join(' ').replace(/\\s+/g, ' ').trim();
+      const combinedText = [initialText, recognizedText].filter(Boolean).join(' ').trim();
+      el.oralTranscript.value = combinedText;
+
+      // Signaler la mise à jour à l'interface et garder la dernière phrase visible.
+      el.oralTranscript.dispatchEvent(new Event('input', { bubbles: true }));
+      el.oralTranscript.scrollTop = el.oralTranscript.scrollHeight;
+      if (combinedText) {
+        el.oralSpeechStatus.textContent = 'Texte reconnu : vous pouvez le relire et le corriger.';
+      }
     };
 
     instance.onerror = (event) => {
@@ -552,12 +561,12 @@ function stopOralTranscription() {
   el.oralSpeech.disabled = true;
   el.oralSpeechStatus.textContent = 'Arrêt de la transcription… Le texte reconnu est conservé.';
 
-  // abort() coupe immédiatement la session en cours. Certains WebView ne renvoient
-  // toutefois pas onend : le délai de sécurité libère alors proprement l'interface.
+  // stop() termine l'écoute proprement et laisse au moteur le temps de livrer
+  // le dernier résultat reconnu. abort() annulait parfois ce résultat sur Android.
   try {
-    instance.abort();
+    instance.stop();
   } catch (error) {
-    try { instance.stop(); } catch { /* le moteur est déjà arrêté */ }
+    try { instance.abort(); } catch { /* le moteur est déjà arrêté */ }
   }
 
   if (recognitionStopTimer) window.clearTimeout(recognitionStopTimer);
@@ -569,8 +578,11 @@ function stopOralTranscription() {
     recognitionStopTimer = null;
     el.oralSpeech.disabled = false;
     el.oralSpeechStop.disabled = true;
-    el.oralSpeechStatus.textContent = 'Transcription arrêtée. Le texte déjà reconnu est conservé ; vous pouvez le corriger.';
-  }, 2500);
+    const hasText = Boolean(el.oralTranscript.value.trim());
+    el.oralSpeechStatus.textContent = hasText
+      ? 'Transcription arrêtée. Le texte reconnu est conservé ; vous pouvez le corriger.'
+      : 'Transcription arrêtée, mais aucun texte n’a été reçu. Vérifiez le service vocal et réessayez.';
+  }, 4000);
 }
 
 async function saveOralProduction() {
