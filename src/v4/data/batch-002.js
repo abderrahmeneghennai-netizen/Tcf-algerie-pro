@@ -18,16 +18,16 @@ const pools = {
 };
 
 const fields = [
-  {key:'activity', label:'Quelle activité est proposée ?', get:r=>r.activity, why:'Le premier paragraphe annonce explicitement l’activité.'},
-  {key:'place', label:'Où l’activité se déroule-t-elle ?', get:r=>r.place, why:'Le lieu est indiqué dans les informations pratiques.'},
-  {key:'date', label:'À quelle date l’activité est-elle organisée ?', get:r=>r.date, why:'La date figure dans l’annonce.'},
-  {key:'time', label:'À quelle heure l’activité commence-t-elle ?', get:r=>r.time, why:'L’heure de début est précisée dans le programme.'},
-  {key:'duration', label:'Combien de temps dure l’activité ?', get:r=>r.duration, why:'La durée est donnée dans les détails de l’activité.'},
-  {key:'fee', label:'Quel est le tarif de participation ?', get:r=>r.fee, why:'Le tarif est indiqué dans les conditions d’inscription.'},
-  {key:'audience', label:'À quel public cette activité s’adresse-t-elle ?', get:r=>r.audience, why:'Le public concerné est précisé dans l’annonce.'},
-  {key:'deadline', label:'Quand faut-il s’inscrire au plus tard ?', get:r=>r.deadline, why:'La date limite d’inscription est mentionnée dans le texte.'},
-  {key:'equipment', label:'Que faut-il apporter ?', get:r=>r.equipment, why:'Le matériel nécessaire est indiqué dans les consignes.'},
-  {key:'contact', label:'Qui faut-il contacter pour obtenir des renseignements ?', get:r=>r.contact, why:'Le dernier paragraphe donne le contact utile.'}
+  {key:'activity', labels:['Quelle activité est proposée ?','De quelle activité parle cette annonce ?','Qu’est-ce que le centre propose aux participants ?','Quelle est l’activité annoncée ?','Quel atelier ou événement est organisé ?'], get:r=>r.activity, why:'Le premier paragraphe annonce explicitement l’activité.'},
+  {key:'place', labels:['Où l’activité se déroule-t-elle ?','Quel est le lieu de rendez-vous ?','Dans quel établissement aura lieu la rencontre ?','Où les participants doivent-ils se rendre ?','Quel lieu est indiqué dans l’annonce ?'], get:r=>r.place, why:'Le lieu est indiqué dans les informations pratiques.'},
+  {key:'date', labels:['À quelle date l’activité est-elle organisée ?','Quel jour la rencontre est-elle prévue ?','Quand l’activité aura-t-elle lieu ?','Quelle date faut-il retenir ?','À quel moment du mois l’événement est-il programmé ?'], get:r=>r.date, why:'La date figure dans l’annonce.'},
+  {key:'time', labels:['À quelle heure l’activité commence-t-elle ?','À quelle heure les participants sont-ils attendus ?','Quel est l’horaire de début ?','Quand la séance débute-t-elle dans la journée ?','Quelle heure est annoncée pour le début ?'], get:r=>r.time, why:'L’heure de début est précisée dans le programme.'},
+  {key:'duration', labels:['Combien de temps dure l’activité ?','Quelle est la durée prévue de la séance ?','Pendant combien de temps les participants seront-ils occupés ?','La rencontre dure combien de temps ?','Quelle durée est annoncée ?'], get:r=>r.duration, why:'La durée est donnée dans les détails de l’activité.'},
+  {key:'fee', labels:['Quel est le tarif de participation ?','Combien coûte l’inscription ?','Quel montant faut-il prévoir ?','La participation est-elle gratuite ou payante, et à quel prix ?','Quel prix est demandé aux participants ?'], get:r=>r.fee, why:'Le tarif est indiqué dans les conditions d’inscription.'},
+  {key:'audience', labels:['À quel public cette activité s’adresse-t-elle ?','Qui peut participer à cette activité ?','Quel groupe de personnes est concerné ?','Pour quelles personnes cette rencontre est-elle prévue ?','Quel est le public visé par l’annonce ?'], get:r=>r.audience, why:'Le public concerné est précisé dans l’annonce.'},
+  {key:'deadline', labels:['Quand faut-il s’inscrire au plus tard ?','Quelle est la date limite d’inscription ?','Jusqu’à quand les inscriptions restent-elles possibles ?','À quel moment faut-il avoir effectué son inscription ?','Quel délai les participants doivent-ils respecter ?'], get:r=>r.deadline, why:'La date limite d’inscription est mentionnée dans le texte.'},
+  {key:'equipment', labels:['Que faut-il apporter ?','Quel matériel est demandé aux participants ?','Quel objet faut-il prévoir pour la séance ?','Les participants doivent-ils venir avec un équipement particulier ?','Quelle consigne concerne le matériel ?'], get:r=>r.equipment, why:'Le matériel nécessaire est indiqué dans les consignes.'},
+  {key:'contact', labels:['Qui faut-il contacter pour obtenir des renseignements ?','À qui peut-on s’adresser en cas de question ?','Quel contact est indiqué dans l’annonce ?','Comment joindre le service responsable ?','Quel interlocuteur peut fournir des précisions ?'], get:r=>r.contact, why:'Le dernier paragraphe donne le contact utile.'}
 ];
 
 const records = Array.from({length:50}, (_,i) => ({
@@ -78,7 +78,7 @@ export const BATCH_002 = {
     chapter:['Identifier le thème','Repérer un lieu','Repérer une date','Comprendre un horaire','Repérer une durée','Comprendre un tarif','Identifier le public','Repérer une condition','Comprendre une consigne','Identifier un interlocuteur'][fi],
     level:ri%4===0?'B2':'B1',
     difficulty:ri%4===0?4:2,
-    prompt:field.label,
+    prompt:field.labels[ri%field.labels.length],
     options:makeOptions(fi,ri,field.get(r)),
     answer:field.get(r),
     explanation:field.why+' La réponse attendue est : '+field.get(r)+'.'
