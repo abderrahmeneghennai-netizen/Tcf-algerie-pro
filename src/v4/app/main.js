@@ -4,6 +4,7 @@ import { sqliteDatabase } from '../database/SQLiteDatabase.js';
 import { ExerciseService } from '../services/ExerciseService.js';
 import { ProgressService } from '../services/ProgressService.js';
 import { SeedService } from '../services/SeedService.js';
+import { ExercisePackImportService } from '../services/ExercisePackImportService.js';
 import { ContentService } from '../services/ContentService.js';
 import { ExpressionOraleService } from '../services/ExpressionOraleService.js';
 import { ExpressionEcriteService } from '../services/ExpressionEcriteService.js';
@@ -1097,6 +1098,8 @@ async function start() {
     if (count !== 14) throw new Error('Nombre de tables inattendu : ' + count + ' (14 attendues).');
 
     await new SeedService(sqliteDatabase).ensureInitialContent();
+    const importedBatch = await new ExercisePackImportService(sqliteDatabase).importInitialBatch();
+    console.info('[TCF V4.0] Banque locale importée', importedBatch);
     const moduleResult = await sqliteDatabase.query(
       "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO', 'EE') AND is_active = 1"
     );
