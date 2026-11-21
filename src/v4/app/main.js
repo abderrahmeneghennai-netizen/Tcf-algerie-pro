@@ -192,7 +192,7 @@ async function playAudio() {
 async function displayQuestion() {
   const item = batch[index];
   if (!item) return;
-  stopAudio();
+  await stopAudio();
   answered = false;
   startedAt = Date.now();
   el.chapter.textContent = item.chapitre + ' · Difficulté ' + item.difficulte + '/5';
