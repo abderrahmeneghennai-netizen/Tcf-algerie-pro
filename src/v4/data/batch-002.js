@@ -45,7 +45,7 @@ const records = Array.from({length:50}, (_,i) => ({
 }));
 
 function makeText(r) {
-  return 'Le centre organise une '+r.activity+' pour '+r.audience+'. '
+  return 'Le programme propose l’activité suivante : '+r.activity+'. Cette activité est ouverte au public suivant : '+r.audience+'. '
     +'La rencontre aura lieu le '+r.date+' à '+r.time+', à '+r.place+'. '
     +'La séance durera '+r.duration+' et le tarif est fixé à '+r.fee+'. '
     +'Les participants doivent prévoir : '+r.equipment+'. '
