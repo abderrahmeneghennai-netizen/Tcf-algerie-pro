@@ -1098,8 +1098,11 @@ async function start() {
     if (count !== 14) throw new Error('Nombre de tables inattendu : ' + count + ' (14 attendues).');
 
     await new SeedService(sqliteDatabase).ensureInitialContent();
-    const importedBatch = await new ExercisePackImportService(sqliteDatabase).importInitialBatch();
-    console.info('[TCF V4.0] Banque locale importée', importedBatch);
+    const packImporter = new ExercisePackImportService(sqliteDatabase);
+    const importedBatch = await packImporter.importInitialBatch();
+    console.info('[TCF V4.0] Banque locale — lot 001', importedBatch);
+    const importedBatch002 = await packImporter.importSecondBatch();
+    console.info('[TCF V4.0] Banque locale — lot 002', importedBatch002);
     const moduleResult = await sqliteDatabase.query(
       "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO', 'EE') AND is_active = 1"
     );
