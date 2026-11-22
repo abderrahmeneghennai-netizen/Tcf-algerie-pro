@@ -8,7 +8,7 @@ const grammar = [
 ['Accord du participe passé','Les lettres que Nadia a ___ hier sont déjà envoyées.',['écrit','écrites','écrite','écrire'],'écrites','Le COD « que » reprend « les lettres » et précède le participe passé employé avec avoir.'],
 ['Subjonctif','Il est indispensable que vous ___ votre inscription avant vendredi.',['confirmez','confirmiez','confirmiez-vous','confirmer'],'confirmiez','« Il est indispensable que » exprime une nécessité et appelle le subjonctif.'],
 ['Conditionnel','Si le service était mieux organisé, les usagers ___ moins longtemps.',['attendront','attendraient','ont attendu','attendent'],'attendraient','Après si + imparfait, la conséquence hypothétique se met au conditionnel présent.'],
-['Pronoms relatifs','Le rapport ___ tu fais référence sera présenté demain.',['que','dont','où','lequel'],'auquel','« Faire référence à » se construit avec à : on emploie « auquel ».'],
+['Pronoms relatifs','Le rapport ___ tu fais référence sera présenté demain.',['que','dont','où','auquel'],'auquel','« Faire référence à » se construit avec à : on emploie « auquel ».'],
 ['Temps du passé','Lorsque le directeur est arrivé, la réunion ___.',['commence','commençait','avait déjà commencé','commencera'],'avait déjà commencé','Le plus-que-parfait marque une action antérieure à une autre action passée.'],
 ['Prépositions','Elle renonce ___ participer au concours cette année.',['à','de','pour','avec'],'à','Le verbe « renoncer » se construit avec la préposition « à ».'],
 ['Discours indirect','Il a annoncé : « Je terminerai demain. » Il a annoncé qu’il ___ le lendemain.',['terminera','terminerait','terminait','a terminé'],'terminerait','Au discours indirect au passé, le futur devient généralement le conditionnel présent.'],
