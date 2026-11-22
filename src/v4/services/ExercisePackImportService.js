@@ -4,6 +4,7 @@
  */
 import { BATCH_001 } from '../data/batch-001.js';
 import { BATCH_002 } from '../data/batch-002.js';
+import { BATCH_003 } from '../data/batch-003.js';
 
 export class ExercisePackImportService {
   constructor(database) {
@@ -143,6 +144,66 @@ export class ExercisePackImportService {
     const actual = Number(count.values?.[0]?.total ?? 0);
     if (actual !== 500) {
       throw new Error('Le contrôle du lot 002 a échoué : ' + actual + '/500 exercices présents.');
+    }
+    return { code: data.code, imported: actual, expected: 500 };
+  }
+
+
+  async importThirdBatch() {
+    const data = BATCH_003;
+    if (data.exercises.length !== 500) {
+      throw new Error('Le lot 003 doit contenir exactement 500 exercices.');
+    }
+    const ids = new Set();
+    for (const item of data.exercises) {
+      if (ids.has(item.id)) throw new Error('Identifiant dupliqué dans le lot 003 : ' + item.id);
+      ids.add(item.id);
+      if (item.module !== 'GRAM' || !['B1', 'B2'].includes(item.level) ||
+          !Array.isArray(item.options) || item.options.length !== 4 ||
+          new Set(item.options).size !== 4 || !item.options.includes(item.answer) ||
+          !item.prompt || !item.explanation) {
+        throw new Error('Exercice invalide dans le lot 003 : ' + item.id);
+      }
+    }
+    const moduleResult = await this.database.query(
+      "SELECT id FROM modules WHERE code='GRAM' LIMIT 1"
+    );
+    const moduleId = moduleResult.values?.[0]?.id;
+    if (!moduleId) throw new Error('Le module Grammaire doit être initialisé avant le lot 003.');
+
+    await this.database.transaction(async db => {
+      await db.run(
+        "INSERT OR IGNORE INTO packs (code,name,is_premium,description) VALUES (?,?,0,?)",
+        [data.code, data.name, data.description]
+      );
+      const packResult = await db.query("SELECT id FROM packs WHERE code=? LIMIT 1", [data.code]);
+      const packId = packResult.values?.[0]?.id;
+      if (!packId) throw new Error('Impossible de créer le pack du lot 003.');
+      await db.run(
+        "INSERT OR IGNORE INTO pack_versions (pack_id,version_number,checksum) VALUES (?,?,?)",
+        [packId, 1, 'tcf-v4-lot-003-500-gram-vocab']
+      );
+      let ordinal = 0;
+      for (const item of data.exercises) {
+        ordinal += 1;
+        await db.run(
+          `INSERT OR IGNORE INTO exercices
+            (stable_id,pack_id,module_id,support_ecrit_id,chapitre,niveau,difficulte,shuffle_key,
+             enonce,options_json,bonne_reponse,explication,is_archived)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0)`,
+          [item.id, packId, moduleId, null, item.chapter, item.level, item.difficulty,
+            300000 + ordinal, item.prompt, JSON.stringify(item.options), item.answer, item.explanation]
+        );
+      }
+    });
+
+    const count = await this.database.query(
+      "SELECT COUNT(*) AS total FROM exercices WHERE pack_id=(SELECT id FROM packs WHERE code=?)",
+      [data.code]
+    );
+    const actual = Number(count.values?.[0]?.total ?? 0);
+    if (actual !== 500) {
+      throw new Error('Le contrôle du lot 003 a échoué : ' + actual + '/500 exercices présents.');
     }
     return { code: data.code, imported: actual, expected: 500 };
   }
