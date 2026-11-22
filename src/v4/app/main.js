@@ -103,6 +103,7 @@ let correct = 0;
 let attempted = 0;
 let startedAt = 0;
 let currentAudio = null;
+let audioPlaybackToken = 0;
 let oralSubjects = [];
 let currentOralSubject = null;
 let writingSubjects = [];
@@ -159,31 +160,46 @@ async function getFrenchTtsLanguage() {
 }
 
 async function stopAudio() {
+  audioPlaybackToken += 1;
   try {
     await TextToSpeech.stop();
   } catch (error) {
     console.warn('[TCF V4.0] Arrêt audio non confirmé', error);
   }
-  if (el.audioStatus && currentAudio) el.audioStatus.textContent = 'Lecture arrêtée.';
+  if (el.audioStatus && currentAudio) el.audioStatus.textContent = 'Lecture arrêtée. Vous pouvez relancer l’écoute.';
 }
 
 async function playAudio() {
-  if (!currentAudio?.transcription) return;
+  const audioToPlay = currentAudio;
+  if (!audioToPlay?.transcription) return;
+  const requestToken = ++audioPlaybackToken;
   el.audioPlay.disabled = true;
   el.audioStatus.textContent = 'Préparation de la lecture audio…';
   try {
+    // Nettoie tout état de lecture précédent avant chaque nouvelle écoute.
+    try {
+      await TextToSpeech.stop();
+    } catch (error) {
+      console.warn('[TCF V4.0] Réinitialisation audio non confirmée', error);
+    }
+    if (requestToken !== audioPlaybackToken) return;
     const language = await getFrenchTtsLanguage();
+    if (requestToken !== audioPlaybackToken) return;
     await TextToSpeech.speak({
-      text: currentAudio.transcription,
+      text: audioToPlay.transcription,
       lang: language,
       rate: 1.0,
       pitch: 1,
       volume: 1
     });
-    el.audioStatus.textContent = 'Écoute terminée. Vous pouvez réécouter le document.';
+    if (requestToken === audioPlaybackToken) {
+      el.audioStatus.textContent = 'Écoute terminée. Vous pouvez réécouter le document.';
+    }
   } catch (error) {
-    console.error('[TCF V4.0] Lecture native impossible', error);
-    el.audioStatus.textContent = 'La lecture audio a échoué : ' + String(error?.message || error);
+    if (requestToken === audioPlaybackToken) {
+      console.error('[TCF V4.0] Lecture native impossible', error);
+      el.audioStatus.textContent = 'La lecture audio a échoué : ' + String(error?.message || error);
+    }
   } finally {
     el.audioPlay.disabled = false;
   }
