@@ -6,6 +6,7 @@ import { BATCH_001 } from '../data/batch-001.js';
 import { BATCH_002 } from '../data/batch-002.js';
 import { BATCH_003 } from '../data/batch-003.js';
 import { BATCH_004_EDITORIAL_60 } from '../data/batch-004-editorial-60.js';
+import { BATCH_004_EDITORIAL } from '../data/batch-004-editorial.js';
 
 export class ExercisePackImportService {
   constructor(database) {
@@ -212,7 +213,7 @@ export class ExercisePackImportService {
 
   async importFourthBatch() {
     const data = BATCH_004_EDITORIAL_60;
-    const expected = { ce: 20, co: 20, ee: 10, eo: 10 };
+    const expected = { ce: 20, co: 20, ee: 10, eo: 10, gram: 40 };
     for (const [kind, count] of Object.entries(expected)) {
       if (!Array.isArray(data[kind]) || data[kind].length !== count) {
         throw new Error('Lot 004 invalide : ' + kind + ' doit contenir ' + count + ' activités.');
@@ -221,9 +222,9 @@ export class ExercisePackImportService {
     const allIds = [
       ...data.ce.map((x, i) => 'l004-ce-' + String(i + 1).padStart(3, '0')),
       ...data.co.map((x, i) => 'l004-co-' + String(i + 1).padStart(3, '0')),
-      ...data.ee.map(x => x.id), ...data.eo.map(x => x.id)
+      ...data.ee.map(x => x.id), ...data.eo.map(x => x.id), ...BATCH_004_EDITORIAL.exercises.map(x => x.id)
     ];
-    if (new Set(allIds).size !== 60) throw new Error('Identifiants dupliqués dans le lot 004.');
+    if (new Set(allIds).size !== 100) throw new Error('Identifiants dupliqués dans le lot 004.');
 
     for (const [kind, rows] of Object.entries({ ce: data.ce, co: data.co })) {
       for (const [index, item] of rows.entries()) {
@@ -235,6 +236,13 @@ export class ExercisePackImportService {
             (kind === 'ce' ? !item.support : !item.transcript)) {
           throw new Error('Question invalide dans le lot 004 (' + kind + ', ' + (index + 1) + ').');
         }
+      }
+    }
+    for (const item of BATCH_004_EDITORIAL.exercises) {
+      if (item.module !== 'GRAM' || !['B1','B2'].includes(item.level) || !item.prompt ||
+          !item.explanation || !Array.isArray(item.options) || item.options.length !== 4 ||
+          new Set(item.options).size !== 4 || !item.options.includes(item.answer)) {
+        throw new Error('QCM grammaire/vocabulaire invalide dans le lot 004 : ' + item.id);
       }
     }
     for (const [kind, rows] of Object.entries({ ee: data.ee, eo: data.eo })) {
@@ -249,10 +257,10 @@ export class ExercisePackImportService {
     }
 
     const modules = await this.database.query(
-      "SELECT id, code FROM modules WHERE code IN ('CE','CO','EE','EO') AND is_active=1"
+      "SELECT id, code FROM modules WHERE code IN ('GRAM','CE','CO','EE','EO') AND is_active=1"
     );
     const moduleIds = Object.fromEntries((modules.values ?? []).map(row => [row.code, row.id]));
-    for (const code of ['CE','CO','EE','EO']) {
+    for (const code of ['GRAM','CE','CO','EE','EO']) {
       if (!moduleIds[code]) throw new Error('Module ' + code + ' non initialisé avant le lot 004.');
     }
 
@@ -260,14 +268,14 @@ export class ExercisePackImportService {
     await this.database.transaction(async db => {
       await db.run(
         "INSERT OR IGNORE INTO packs (code,name,is_premium,description) VALUES (?,?,0,?)",
-        [packCode, 'Lot 004 — 60 activités originales', '20 CE, 20 CO, 10 EE et 10 EO. Supports et consignes éditorialement distincts.']
+        [packCode, 'Lot 004 — 100 activités éditoriales', '40 QCM de grammaire/vocabulaire, 20 CE, 20 CO, 10 EE et 10 EO.']
       );
       const packResult = await db.query("SELECT id FROM packs WHERE code=? LIMIT 1", [packCode]);
       const packId = packResult.values?.[0]?.id;
       if (!packId) throw new Error('Impossible de créer le pack du lot 004.');
       await db.run(
         "INSERT OR IGNORE INTO pack_versions (pack_id,version_number,checksum) VALUES (?,?,?)",
-        [packId, 1, 'tcf-v4-lot-004-60-editorial-items']
+        [packId, 1, 'tcf-v4-lot-004-100-editorial-items']
       );
 
       const supportIds = {};
@@ -320,6 +328,18 @@ export class ExercisePackImportService {
         );
       }
 
+      for (let i = 0; i < BATCH_004_EDITORIAL.exercises.length; i++) {
+        const item = BATCH_004_EDITORIAL.exercises[i];
+        await db.run(
+          `INSERT OR IGNORE INTO exercices
+            (stable_id,pack_id,module_id,chapitre,niveau,difficulte,shuffle_key,
+             enonce,options_json,bonne_reponse,explication,is_archived)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,0)`,
+          [item.id, packId, moduleIds.GRAM, item.chapter, item.level, item.difficulty,
+            420000 + i + 1, item.prompt, JSON.stringify(item.options), item.answer, item.explanation]
+        );
+      }
+
       for (const item of data.ee) {
         await db.run(
           `INSERT OR IGNORE INTO sujets_expression
@@ -344,16 +364,17 @@ export class ExercisePackImportService {
       `SELECT
         (SELECT COUNT(*) FROM exercices WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS ce,
         (SELECT COUNT(*) FROM exercices WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS co,
+        (SELECT COUNT(*) FROM exercices WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS gram,
         (SELECT COUNT(*) FROM sujets_expression WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS ee,
         (SELECT COUNT(*) FROM sujets_expression WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS eo`,
-      [packCode,moduleIds.CE,packCode,moduleIds.CO,packCode,moduleIds.EE,packCode,moduleIds.EO]
+      [packCode,moduleIds.CE,packCode,moduleIds.CO,packCode,moduleIds.GRAM,packCode,moduleIds.EE,packCode,moduleIds.EO]
     );
     const totals = verify.values?.[0] ?? {};
-    if (Number(totals.ce) !== 20 || Number(totals.co) !== 20 ||
+    if (Number(totals.ce) !== 20 || Number(totals.co) !== 20 || Number(totals.gram) !== 40 ||
         Number(totals.ee) !== 10 || Number(totals.eo) !== 10) {
       throw new Error('Vérification du lot 004 échouée : ' + JSON.stringify(totals));
     }
-    return { code: packCode, imported: 60, breakdown: totals };
+    return { code: packCode, imported: 100, breakdown: totals };
   }
 
 }
