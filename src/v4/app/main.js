@@ -104,6 +104,7 @@ let attempted = 0;
 let startedAt = 0;
 let currentAudio = null;
 let audioPlaybackToken = 0;
+let audioStopPromise = Promise.resolve();
 let oralSubjects = [];
 let currentOralSubject = null;
 let writingSubjects = [];
@@ -160,13 +161,21 @@ async function getFrenchTtsLanguage() {
 }
 
 async function stopAudio() {
+  // Invalide immédiatement toute lecture en cours et libère le bouton.
+  // Sur Android, stop() peut interrompre speak() sans résoudre sa promesse.
   audioPlaybackToken += 1;
-  try {
-    await TextToSpeech.stop();
-  } catch (error) {
-    console.warn('[TCF V4.0] Arrêt audio non confirmé', error);
+  if (el.audioPlay) el.audioPlay.disabled = false;
+  audioStopPromise = (async () => {
+    try {
+      await TextToSpeech.stop();
+    } catch (error) {
+      console.warn('[TCF V4.0] Arrêt audio non confirmé', error);
+    }
+  })();
+  await audioStopPromise;
+  if (el.audioStatus && currentAudio) {
+    el.audioStatus.textContent = 'Lecture arrêtée. Vous pouvez relancer l’écoute.';
   }
-  if (el.audioStatus && currentAudio) el.audioStatus.textContent = 'Lecture arrêtée. Vous pouvez relancer l’écoute.';
 }
 
 async function playAudio() {
@@ -176,6 +185,8 @@ async function playAudio() {
   el.audioPlay.disabled = true;
   el.audioStatus.textContent = 'Préparation de la lecture audio…';
   try {
+    // Attend la fin d'un éventuel arrêt précédent avant de relancer le moteur.
+    await audioStopPromise;
     // Nettoie tout état de lecture précédent avant chaque nouvelle écoute.
     try {
       await TextToSpeech.stop();
