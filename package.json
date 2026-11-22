@@ -5,7 +5,8 @@
   "description": "Application de préparation au TCF Canada",
   "scripts": {
     "build": "vite build",
-    "test:sqlite": "python3 tests/sqlite_schema_test.py"
+    "test:sqlite": "python3 tests/sqlite_schema_test.py",
+    "audit:content": "node scripts/audit-exercise-banks.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^6.2.0",
