@@ -102,10 +102,10 @@ const report = {
     invalidRecords: issues.length,
     details: issues
   },
-  notIncludedByCurrentImporter: {
+  integratedIntoCurrentImporter: {
     file: 'src/v4/data/batch-004-editorial.js',
     declaredQcm: '40',
-    note: 'Ces 40 QCM sont désormais intégrés à l’import du lot 004.'
+    note: 'Ces 40 QCM sont comptabilisés dans le total importé du lot 004.'
   }
 };
 
