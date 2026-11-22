@@ -309,7 +309,7 @@ export class ExercisePackImportService {
       for (let i = 0; i < data.co.length; i++) {
         const item = data.co[i];
         const code = 'l004-co-' + String(i + 1).padStart(3, '0');
-        const duration = Math.max(20, Math.ceil(item.transcript.trim().split(/\\s+/).length / 2.2));
+        const duration = Math.max(20, Math.ceil(item.transcript.trim().split(/\s+/).length / 2.2));
         await db.run(
           "INSERT OR IGNORE INTO fichiers_audio (pack_id,stable_code,chemin_fichier,duree_secondes,transcription,is_archived) VALUES (?,?,?,?,?,0)",
           [packId, code, 'tts://fr-FR/' + code, duration, item.transcript]
