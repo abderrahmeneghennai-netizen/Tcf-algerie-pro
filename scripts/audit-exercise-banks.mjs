@@ -7,6 +7,7 @@ import { BATCH_001 } from '../src/v4/data/batch-001.js';
 import { BATCH_002 } from '../src/v4/data/batch-002.js';
 import { BATCH_003 } from '../src/v4/data/batch-003.js';
 import { BATCH_004_EDITORIAL_60 } from '../src/v4/data/batch-004-editorial-60.js';
+import { BATCH_004_EDITORIAL } from '../src/v4/data/batch-004-editorial.js';
 
 const normalize = value => String(value ?? '')
   .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -35,6 +36,7 @@ const qcm003 = BATCH_003.exercises;
 const ce004 = BATCH_004_EDITORIAL_60.ce;
 const co004 = BATCH_004_EDITORIAL_60.co;
 const open004 = [...BATCH_004_EDITORIAL_60.ee, ...BATCH_004_EDITORIAL_60.eo];
+const editorial004 = BATCH_004_EDITORIAL.exercises;
 
 const validQcm = item =>
   Boolean(item.id && item.prompt && item.explanation &&
@@ -43,11 +45,11 @@ const validQcm = item =>
   (typeof item.answer === 'number'
     ? Number.isInteger(item.answer) && item.answer >= 0 && item.answer < 4
     : item.options.some(option => normalize(option) === normalize(item.answer))) &&
-  ['B1','B2'].includes(item.level ?? item.level));
+  ['B1','B2'].includes(item.level));
 
 const issues = [];
 for (const [name, rows] of Object.entries({
-  'lot-001': qcm001, 'lot-002': qcm002, 'lot-003': qcm003
+  'lot-001': qcm001, 'lot-002': qcm002, 'lot-003': qcm003, 'lot-004-gram-vocab': editorial004
 })) {
   rows.forEach((item, index) => {
     if (!validQcm(item)) issues.push(name + ' : enregistrement invalide à la position ' + (index + 1) + ' (' + (item.id ?? 'sans ID') + ')');
@@ -82,8 +84,8 @@ const report = {
     lot002Qcm: qcm002.length,
     lot002Supports: BATCH_002.supports.length,
     lot003Qcm: qcm003.length,
-    lot004: { ce: ce004.length, co: co004.length, ee: BATCH_004_EDITORIAL_60.ee.length, eo: BATCH_004_EDITORIAL_60.eo.length },
-    totalImportedByCurrentImporter: qcm001.length + qcm002.length + qcm003.length + ce004.length + co004.length + open004.length
+    lot004: { grammaireVocabulaire: editorial004.length, ce: ce004.length, co: co004.length, ee: BATCH_004_EDITORIAL_60.ee.length, eo: BATCH_004_EDITORIAL_60.eo.length },
+    totalImportedByCurrentImporter: qcm001.length + qcm002.length + qcm003.length + ce004.length + co004.length + open004.length + editorial004.length
   },
   diversity: {
     lot001UniquePrompts: countUnique(qcm001.map(x => x.prompt)),
@@ -93,7 +95,8 @@ const report = {
     lot003UniquePromptsAfterRemovingKnownWrappers: new Set(lot003BasePrompts).size,
     lot003ExactDuplicateBasePrompts: duplicates(lot003BasePrompts),
     lot004UniqueClosedQuestionStems: countUnique([...ce004, ...co004].map(x => x.prompt)),
-    lot004UniqueOpenTasks: countUnique(open004.map(x => x.task))
+    lot004UniqueOpenTasks: countUnique(open004.map(x => x.task)),
+    lot004EditorialUniquePrompts: countUnique(editorial004.map(x => x.prompt))
   },
   validation: {
     invalidRecords: issues.length,
@@ -102,7 +105,7 @@ const report = {
   notIncludedByCurrentImporter: {
     file: 'src/v4/data/batch-004-editorial.js',
     declaredQcm: '40',
-    note: 'Ce fichier n’est pas importé par ExercisePackImportService.js.'
+    note: 'Ces 40 QCM sont désormais intégrés à l’import du lot 004.'
   }
 };
 
