@@ -16,6 +16,9 @@ jobs:
       - name: Vérifier le schéma SQLite V4
         run: python3 tests/sqlite_schema_test.py
 
+      - name: Auditer les banques pédagogiques V4
+        run: npm run audit:content
+
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
