@@ -1130,6 +1130,8 @@ async function start() {
     console.info('[TCF V4.0] Banque locale — lot 001', importedBatch);
     const importedBatch002 = await packImporter.importSecondBatch();
     console.info('[TCF V4.0] Banque locale — lot 002', importedBatch002);
+    const importedBatch003 = await packImporter.importThirdBatch();
+    console.info('[TCF V4.0] Banque locale — lot 003', importedBatch003);
     const moduleResult = await sqliteDatabase.query(
       "SELECT id, code FROM modules WHERE code IN ('GRAM', 'CE', 'CO', 'EO', 'EE') AND is_active = 1"
     );
