@@ -213,7 +213,10 @@ export class ExercisePackImportService {
 
   async importFourthBatch() {
     const data = BATCH_004_EDITORIAL_60;
-    const expected = { ce: 20, co: 20, ee: 10, eo: 10, gram: 40 };
+    const expected = { ce: 20, co: 20, ee: 10, eo: 10 };
+    if (BATCH_004_EDITORIAL.exercises.length !== 40) {
+      throw new Error('Lot 004 invalide : 40 QCM de grammaire/vocabulaire attendus.');
+    }
     for (const [kind, count] of Object.entries(expected)) {
       if (!Array.isArray(data[kind]) || data[kind].length !== count) {
         throw new Error('Lot 004 invalide : ' + kind + ' doit contenir ' + count + ' activités.');
