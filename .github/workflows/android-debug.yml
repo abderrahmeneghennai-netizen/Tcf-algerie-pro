@@ -1,4 +1,4 @@
-# Relance de compilation APK V4.0 après correction du lecteur audio Android.
+# Relance de compilation APK V4.0 après intégration du lot 003.
 name: Build TCF Algerie Pro Android
 
 on:
