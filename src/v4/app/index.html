@@ -74,10 +74,10 @@
       <h2 id="modulesTitle">Choisissez votre compétence</h2>
       <div class="module-grid">
         <button class="module-card module-co" id="moduleCardCO" data-module="CO" type="button" aria-label="Ouvrir la compréhension orale">
-          <span>Compréhension orale</span><small>ÉCOUTER · B1-B2</small>
+          <span>Compréhension orale</span><small>ÉCOUTER · A1-C2</small>
         </button>
         <button class="module-card module-ce" id="moduleCardCE" data-module="CE" type="button" aria-label="Ouvrir la compréhension écrite">
-          <span>Compréhension écrite</span><small>LIRE · B1-B2</small>
+          <span>Compréhension écrite</span><small>LIRE · A1-C2</small>
         </button>
         <button class="module-card module-ee" id="moduleCardEE" data-module="EE" type="button" aria-label="Ouvrir l’expression écrite">
           <span>Expression écrite</span><small>ÉCRIRE</small>
@@ -86,7 +86,7 @@
           <span>Expression orale</span><small>PARLER</small>
         </button>
         <button class="module-card module-gram" id="moduleCardGRAM" data-module="GRAM" type="button" aria-label="Ouvrir la grammaire">
-          <span>Grammaire</span><small>GRAMMAIRE · B1-B2</small>
+          <span>Grammaire</span><small>GRAMMAIRE · A1-C2</small>
         </button>
       </div>
     </section>
@@ -108,8 +108,12 @@
       <div class="training-controls" aria-label="Choisir un niveau">
         <div class="control-group">
           <span class="control-label">Niveau</span>
-          <button class="choice-button selected" id="b1LevelButton" type="button">B1</button>
-          <button class="choice-button" id="b2LevelButton" type="button">B2</button>
+          <button class="choice-button" data-level="A1" type="button">A1</button>
+          <button class="choice-button" data-level="A2" type="button">A2</button>
+          <button class="choice-button" id="b1LevelButton" data-level="B1" type="button">B1</button>
+          <button class="choice-button" id="b2LevelButton" data-level="B2" type="button">B2</button>
+          <button class="choice-button" data-level="C1" type="button">C1</button>
+          <button class="choice-button" data-level="C2" type="button">C2</button>
         </div>
       </div>
       <section class="reading-support" id="readingSupport" hidden aria-labelledby="readingTitle">
