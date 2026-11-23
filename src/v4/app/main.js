@@ -222,7 +222,7 @@ async function shareFeedback() {
       el.feedbackExport.hidden = false;
       el.feedbackExport.focus();
       el.feedbackExport.select();
-      el.feedbackStatus.textContent = 'La fonction de partage n'est pas disponible. Le texte est affiché ci-dessous pour être copié.';
+      el.feedbackStatus.textContent = "La fonction de partage n’est pas disponible. Le texte est affiché ci-dessous pour être copié.";
     }
   } catch (error) {
     if (error?.name === 'AbortError') {
