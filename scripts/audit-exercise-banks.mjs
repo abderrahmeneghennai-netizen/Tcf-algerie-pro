@@ -8,6 +8,7 @@ import { BATCH_002 } from '../src/v4/data/batch-002.js';
 import { BATCH_003 } from '../src/v4/data/batch-003.js';
 import { BATCH_004_EDITORIAL_60 } from '../src/v4/data/batch-004-editorial-60.js';
 import { BATCH_004_EDITORIAL } from '../src/v4/data/batch-004-editorial.js';
+import { BATCH_005 } from '../src/v4/data/batch-005.js';
 
 const normalize = value => String(value ?? '')
   .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -37,6 +38,9 @@ const ce004 = BATCH_004_EDITORIAL_60.ce;
 const co004 = BATCH_004_EDITORIAL_60.co;
 const open004 = [...BATCH_004_EDITORIAL_60.ee, ...BATCH_004_EDITORIAL_60.eo];
 const editorial004 = BATCH_004_EDITORIAL.exercises;
+const qcm005 = BATCH_005.editorial;
+const closed005 = [...BATCH_005.ce, ...BATCH_005.co];
+const open005 = [...BATCH_005.ee, ...BATCH_005.eo];
 
 const validQcm = item =>
   Boolean(item.id && item.prompt && item.explanation &&
@@ -73,6 +77,33 @@ open004.forEach(item => {
   }
 });
 
+closed005.forEach((item, index) => {
+  if (!item.id || !item.prompt || !item.explanation || !Array.isArray(item.options) ||
+      item.options.length !== 4 || new Set(item.options.map(normalize)).size !== 4 ||
+      !Number.isInteger(item.answer) || item.answer < 0 || item.answer > 3 ||
+      !['A1','A2','B1','B2','C1','C2'].includes(item.level) ||
+      (item.support !== undefined && !item.support) ||
+      (item.transcript !== undefined && !item.transcript)) {
+    issues.push('Lot 005 fermé : enregistrement invalide (' + (item.id ?? index) + ')');
+  }
+});
+qcm005.forEach((item, index) => {
+  if (!item.id || item.module !== 'GRAM' || !item.prompt || !item.explanation ||
+      !Array.isArray(item.options) || item.options.length !== 4 ||
+      new Set(item.options.map(normalize)).size !== 4 ||
+      !item.options.some(option => normalize(option) === normalize(item.answer)) ||
+      !['A1','A2','B1','B2','C1','C2'].includes(item.level)) {
+    issues.push('Lot 005 grammaire/vocabulaire : enregistrement invalide (' + (item.id ?? index) + ')');
+  }
+});
+open005.forEach(item => {
+  if (!item.id || !item.task || !['A1','A2','B1','B2','C1','C2'].includes(item.level) ||
+      !Array.isArray(item.criteria) || item.criteria.length !== 5 ||
+      item.criteria.reduce((sum, c) => sum + Number(c.points || 0), 0) !== 20) {
+    issues.push('Lot 005 ouvert : sujet incomplet (' + (item.id ?? 'sans ID') + ')');
+  }
+});
+
 const lot003BasePrompts = qcm003.map(item => stripLot003Wrapper(item.prompt));
 const lot002SupportTexts = BATCH_002.supports.map(item => item.text);
 const lot002QuestionTypes = qcm002.map(item => item.chapter);
@@ -85,7 +116,8 @@ const report = {
     lot002Supports: BATCH_002.supports.length,
     lot003Qcm: qcm003.length,
     lot004: { grammaireVocabulaire: editorial004.length, ce: ce004.length, co: co004.length, ee: BATCH_004_EDITORIAL_60.ee.length, eo: BATCH_004_EDITORIAL_60.eo.length },
-    totalImportedByCurrentImporter: qcm001.length + qcm002.length + qcm003.length + ce004.length + co004.length + open004.length + editorial004.length
+    lot005: { grammaireVocabulaire: qcm005.length, ce: BATCH_005.ce.length, co: BATCH_005.co.length, ee: BATCH_005.ee.length, eo: BATCH_005.eo.length },
+    totalImportedByCurrentImporter: qcm001.length + qcm002.length + qcm003.length + ce004.length + co004.length + open004.length + editorial004.length + closed005.length + open005.length + qcm005.length
   },
   diversity: {
     lot001UniquePrompts: countUnique(qcm001.map(x => x.prompt)),
