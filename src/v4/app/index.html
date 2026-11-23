@@ -50,14 +50,14 @@
         <p>Chaque parcours possède ses propres couleurs pour être facilement reconnaissable.</p>
       </div>
       <div class="pathway-grid">
-        <article class="pathway-card pathway-canada">
+        <button class="pathway-card pathway-canada" data-exam-profile="canada" type="button" aria-pressed="false">
           <span class="pathway-symbol" aria-hidden="true">🍁</span>
-          <div><h3>TCF Canada</h3><p>Rouge et blanc</p></div>
-        </article>
-        <article class="pathway-card pathway-quebec">
+          <div><h3>TCF Canada</h3><p>39 CO · 39 CE · 2 h 47</p></div>
+        </button>
+        <button class="pathway-card pathway-quebec" data-exam-profile="quebec" type="button" aria-pressed="false">
           <span class="pathway-symbol fleur" aria-hidden="true">⚜ ⚜</span>
-          <div><h3>TCF Québec</h3><p>Bleu et blanc · sans croix</p></div>
-        </article>
+          <div><h3>TCF Québec</h3><p>29 CO · 29 CE · 2 h 22</p></div>
+        </button>
         <article class="pathway-card pathway-irn">
           <span class="pathway-symbol" aria-hidden="true">IRN</span>
           <div><h3>TCF IRN</h3><p>Vert émeraude et blanc</p></div>
@@ -67,7 +67,13 @@
           <div><h3>TCF Tout Public</h3><p>Violet, doré et blanc</p></div>
         </article>
       </div>
-      <p class="pathways-note">Identités graphiques validées · contenus des parcours à développer progressivement</p>
+      <section class="exam-profile-details" aria-live="polite">
+        <h3 id="examProfileTitle">Parcours TCF Canada sélectionné</h3>
+        <ul id="examProfileBreakdown"></ul>
+        <p id="examProfileTotal" class="exam-profile-total"></p>
+        <p class="exam-profile-shared">La banque d'entraînement est commune. Les formats et les durées des parcours restent distincts.</p>
+      </section>
+      <p class="pathways-note">Choisissez votre examen pour afficher son format officiel.</p>
     </section>
 
     <section class="modules" aria-labelledby="modulesTitle">
@@ -230,6 +236,13 @@
           <div class="history-list" id="writingProductionsList" aria-live="polite"></div>
         </section>
       </section>
+      <section class="bank-complete-panel" id="bankCompletePanel" hidden aria-live="polite">
+        <h3 id="bankCompleteTitle">Parcours terminé !</h3>
+        <p id="bankCompleteMessage">Tu as terminé les exercices actuellement disponibles.</p>
+        <p>De nouveaux exercices sont en préparation. Tu peux nous aider à choisir les prochains thèmes.</p>
+        <button class="primary-button" id="bankFeedbackButton" type="button">Proposer de nouveaux exercices</button>
+        <button class="secondary-button" id="restartModuleButton" type="button">Recommencer ce parcours</button>
+      </section>
       <div class="progress-line">
         <span id="progressLabel">Question 0 / 0</span>
         <span id="scoreLabel">0 bonne(s) réponse(s) sur 0</span>
@@ -251,6 +264,34 @@
       </section>
     </section>
 
+
+    <section class="feedback-section" id="feedbackSection" aria-labelledby="feedbackTitle">
+      <p class="eyebrow">VOTRE PARTICIPATION</p>
+      <h2 id="feedbackTitle">Avis et suggestions</h2>
+      <p>Aidez-nous à améliorer l'application et à préparer les prochains lots d'exercices.</p>
+      <label class="control-label" for="feedbackType">Votre sujet</label>
+      <select class="oral-select" id="feedbackType">
+        <option value="Avis général">Avis général</option>
+        <option value="Question incorrecte">Signaler une question incorrecte</option>
+        <option value="Niveau manquant">Signaler un niveau à compléter</option>
+        <option value="Nouveau thème">Proposer un thème ou des exercices</option>
+        <option value="Problème technique">Signaler un problème technique</option>
+      </select>
+      <label class="control-label" for="feedbackRating">Votre appréciation</label>
+      <select class="oral-select" id="feedbackRating">
+        <option value="">Choisir une note (facultatif)</option>
+        <option value="5/5">5/5 — Excellent</option>
+        <option value="4/5">4/5 — Très bien</option>
+        <option value="3/5">3/5 — Bien</option>
+        <option value="2/5">2/5 — À améliorer</option>
+        <option value="1/5">1/5 — Insuffisant</option>
+      </select>
+      <label class="control-label" for="feedbackMessage">Votre message</label>
+      <textarea id="feedbackMessage" class="feedback-message" rows="4" maxlength="1200" placeholder="Écrivez votre avis, le numéro de la question ou le thème souhaité…"></textarea>
+      <button class="primary-button" id="feedbackShareButton" type="button">Partager mon avis</button>
+      <p class="feedback-status" id="feedbackStatus" aria-live="polite">Votre message ne sera pas envoyé automatiquement : vous choisirez l'application de partage sur votre téléphone.</p>
+      <textarea id="feedbackExport" class="feedback-message" rows="6" readonly hidden aria-label="Texte de l'avis à partager"></textarea>
+    </section>
 
     <footer>TCF ALGÉRIE PRO V4.0 · Application indépendante de préparation</footer>
   </main>
