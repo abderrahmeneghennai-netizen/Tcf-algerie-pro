@@ -214,7 +214,7 @@ async function shareFeedback() {
   try {
     if (navigator.share) {
       await navigator.share({ title: 'Avis TCF ALGÉRIE PRO', text: report });
-      el.feedbackStatus.textContent = 'Le menu de partage a été ouvert. Choisis l'application à utiliser pour nous transmettre ton avis.';
+      el.feedbackStatus.textContent = "Le menu de partage a été ouvert. Choisis l’application à utiliser pour nous transmettre ton avis.";
     } else if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(report);
       el.feedbackStatus.textContent = 'Avis copié. Tu peux le coller dans ton application de messagerie ou ton e-mail.';
