@@ -7,7 +7,7 @@ export class ExerciseService {
     this.database = database;
   }
 
-  async getNextBatch({ moduleId, level, limit = 10, premiumAccess = false }) {
+  async getNextBatch({ moduleId, level, limit = 10, premiumAccess = false, wrapAtEnd = true }) {
     if (!Number.isInteger(moduleId) || moduleId <= 0) {
       throw new TypeError('moduleId doit être un entier positif.');
     }
@@ -45,10 +45,17 @@ export class ExerciseService {
           cursor.last_shuffle_key, cursor.last_shuffle_key, cursor.last_id, limit]
       );
       rows = next.values ?? [];
+    } else {
+      const first = await this.database.query(
+        `${baseSql} ORDER BY e.shuffle_key ASC, e.id ASC LIMIT ?`,
+        [moduleId, level, premiumAccess ? 1 : 0, limit]
+      );
+      rows = first.values ?? [];
     }
 
-    // Si la fin est atteinte, reprendre au début sans répéter les éléments du lot.
-    if (rows.length < limit) {
+    // Le mode circulaire reste disponible par défaut. Le parcours d'entraînement
+    // peut demander un arrêt réel en fin de banque pour afficher le message de fin.
+    if (wrapAtEnd && rows.length < limit) {
       const remaining = limit - rows.length;
       const wrapParams = [moduleId, level, premiumAccess ? 1 : 0];
       let wrapCondition = '';
@@ -86,6 +93,25 @@ export class ExerciseService {
     }
 
     return rows;
+  }
+
+  async getAvailableCount({ moduleId, level, premiumAccess = false }) {
+    const result = await this.database.query(
+      `SELECT COUNT(*) AS total
+       FROM exercices e
+       INNER JOIN packs p ON p.id = e.pack_id
+       WHERE e.module_id = ? AND e.niveau = ? AND e.is_archived = 0
+         AND (? = 1 OR p.is_premium = 0)`,
+      [moduleId, level, premiumAccess ? 1 : 0]
+    );
+    return Number(result.values?.[0]?.total ?? 0);
+  }
+
+  async resetCursor({ moduleId, level }) {
+    await this.database.run(
+      'DELETE FROM user_selection_cursor WHERE module_id = ? AND niveau = ?',
+      [moduleId, level]
+    );
   }
 
   async getById(exerciseId, { premiumAccess = false } = {}) {
