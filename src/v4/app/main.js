@@ -83,7 +83,23 @@ const el = {
   audioStop: document.querySelector('#audioStopButton'),
   audioStatus: document.querySelector('#audioStatus'),
   transcriptionButton: document.querySelector('#transcriptionButton'),
-  audioTranscript: document.querySelector('#audioTranscript')
+  audioTranscript: document.querySelector('#audioTranscript'),
+  examProfileCards: document.querySelectorAll('[data-exam-profile]'),
+  examProfileTitle: document.querySelector('#examProfileTitle'),
+  examProfileBreakdown: document.querySelector('#examProfileBreakdown'),
+  examProfileTotal: document.querySelector('#examProfileTotal'),
+  bankCompletePanel: document.querySelector('#bankCompletePanel'),
+  bankCompleteTitle: document.querySelector('#bankCompleteTitle'),
+  bankCompleteMessage: document.querySelector('#bankCompleteMessage'),
+  bankFeedbackButton: document.querySelector('#bankFeedbackButton'),
+  restartModuleButton: document.querySelector('#restartModuleButton'),
+  feedbackType: document.querySelector('#feedbackType'),
+  feedbackRating: document.querySelector('#feedbackRating'),
+  feedbackMessage: document.querySelector('#feedbackMessage'),
+  feedbackShareButton: document.querySelector('#feedbackShareButton'),
+  feedbackStatus: document.querySelector('#feedbackStatus'),
+  feedbackExport: document.querySelector('#feedbackExport'),
+  feedbackSection: document.querySelector('#feedbackSection')
 };
 const exercises = new ExerciseService(sqliteDatabase);
 const progress = new ProgressService(sqliteDatabase);
@@ -94,6 +110,7 @@ const correctionService = new CorrectionEcriteService();
 const moduleIds = {};
 let activeModule = 'GRAM';
 let activeLevel = 'B1';
+let activeExamProfile = 'canada';
 let moduleId = null;
 let batch = [];
 let index = 0;
@@ -126,6 +143,98 @@ function status(kind, heading, detail, diagnostic = '') {
 function normalize(value) {
   return String(value ?? '').trim().toLocaleLowerCase('fr');
 }
+
+const EXAM_PROFILES = {
+  canada: {
+    name: 'TCF Canada',
+    rows: [
+      'Compréhension orale : 39 questions · 35 minutes',
+      'Compréhension écrite : 39 questions · 60 minutes',
+      'Expression écrite : 3 tâches · 60 minutes',
+      'Expression orale : 3 tâches · 12 minutes'
+    ],
+    total: 'Durée totale : 2 h 47'
+  },
+  quebec: {
+    name: 'TCF Québec',
+    rows: [
+      'Compréhension orale : 29 questions · 25 minutes',
+      'Compréhension écrite : 29 questions · 45 minutes',
+      'Expression écrite : 3 tâches · 60 minutes',
+      'Expression orale : 3 tâches · 12 minutes'
+    ],
+    total: 'Durée totale : 2 h 22'
+  }
+};
+
+function updateExamProfile(profileCode) {
+  if (!EXAM_PROFILES[profileCode]) return;
+  activeExamProfile = profileCode;
+  const profile = EXAM_PROFILES[profileCode];
+  if (el.examProfileTitle) el.examProfileTitle.textContent = 'Parcours ' + profile.name + ' sélectionné';
+  if (el.examProfileBreakdown) {
+    el.examProfileBreakdown.replaceChildren();
+    profile.rows.forEach((row) => {
+      const item = document.createElement('li');
+      item.textContent = row;
+      el.examProfileBreakdown.append(item);
+    });
+  }
+  if (el.examProfileTotal) el.examProfileTotal.textContent = profile.total;
+  el.examProfileCards.forEach((card) => {
+    const selected = card.dataset.examProfile === profileCode;
+    card.classList.toggle('selected-profile', selected);
+    card.setAttribute('aria-pressed', String(selected));
+  });
+}
+
+async function shareFeedback() {
+  const message = el.feedbackMessage?.value.trim() || '';
+  const category = el.feedbackType?.value || 'Avis général';
+  const rating = el.feedbackRating?.value || 'Non renseignée';
+  if (!message) {
+    el.feedbackStatus.textContent = 'Écris un court message avant de partager ton avis.';
+    el.feedbackMessage?.focus();
+    return;
+  }
+  const profileName = EXAM_PROFILES[activeExamProfile]?.name || 'Non sélectionné';
+  const report = [
+    'Avis TCF ALGÉRIE PRO V4.0',
+    'Parcours : ' + profileName,
+    'Compétence : ' + activeModule,
+    'Niveau : ' + activeLevel,
+    'Catégorie : ' + category,
+    'Note : ' + rating,
+    'Message : ' + message
+  ].join('\n');
+  if (el.feedbackExport) {
+    el.feedbackExport.value = report;
+    el.feedbackExport.hidden = true;
+  }
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Avis TCF ALGÉRIE PRO', text: report });
+      el.feedbackStatus.textContent = 'Le menu de partage a été ouvert. Choisis l'application à utiliser pour nous transmettre ton avis.';
+    } else if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(report);
+      el.feedbackStatus.textContent = 'Avis copié. Tu peux le coller dans ton application de messagerie ou ton e-mail.';
+    } else {
+      el.feedbackExport.hidden = false;
+      el.feedbackExport.focus();
+      el.feedbackExport.select();
+      el.feedbackStatus.textContent = 'La fonction de partage n'est pas disponible. Le texte est affiché ci-dessous pour être copié.';
+    }
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      el.feedbackStatus.textContent = 'Partage annulé. Ton message est toujours disponible dans le formulaire.';
+    } else {
+      el.feedbackExport.hidden = false;
+      el.feedbackStatus.textContent = 'Partage indisponible. Le texte de ton avis est affiché ci-dessous.';
+      console.warn('[TCF V4.0] Partage de l’avis indisponible', error);
+    }
+  }
+}
+
 
 function formatProductionDate(value) {
   if (!value) return 'Date non disponible';
@@ -1031,16 +1140,29 @@ async function loadBatch() {
     moduleId,
     level: activeLevel,
     limit: 5,
-    premiumAccess: false
+    premiumAccess: false,
+    wrapAtEnd: false
   });
   index = 0;
   if (!batch.length) {
-    el.chapter.textContent = '';
-    el.question.textContent = 'Aucune question gratuite disponible pour ce niveau.';
+    const available = await exercises.getAvailableCount({
+      moduleId, level: activeLevel, premiumAccess: false
+    });
+    el.questionCard.hidden = true;
+    el.bankCompletePanel.hidden = false;
+    el.bankCompleteTitle.textContent = available > 0
+      ? 'Bravo ! Tu as terminé les exercices disponibles.'
+      : 'De nouveaux exercices arrivent bientôt.';
+    el.bankCompleteMessage.textContent = available > 0
+      ? 'Tu as parcouru tous les exercices actuellement disponibles en ' + activeLevel + ' pour cette compétence.'
+      : 'Aucun exercice gratuit n’est encore disponible pour ce niveau.';
     el.answers.replaceChildren();
     el.next.hidden = true;
+    el.progress.textContent = available > 0 ? 'Parcours terminé' : 'En préparation';
     return;
   }
+  el.bankCompletePanel.hidden = true;
+  el.questionCard.hidden = false;
   await displayQuestion();
 }
 async function refreshModuleStats() {
@@ -1151,6 +1273,24 @@ async function start() {
     if (el.historyButton) el.historyButton.addEventListener('click', showHistory);
     el.moduleCards.forEach(card => {
       card.addEventListener('click', () => chooseModule(card.dataset.module).catch(handleModuleError));
+    });
+    el.examProfileCards.forEach(card => {
+      card.addEventListener('click', () => updateExamProfile(card.dataset.examProfile));
+    });
+    updateExamProfile(activeExamProfile);
+    if (el.feedbackShareButton) el.feedbackShareButton.addEventListener('click', shareFeedback);
+    if (el.bankFeedbackButton) el.bankFeedbackButton.addEventListener('click', () => {
+      el.feedbackSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.feedbackType.value = 'Nouveau thème';
+      el.feedbackMessage.focus();
+    });
+    if (el.restartModuleButton) el.restartModuleButton.addEventListener('click', async () => {
+      try {
+        await exercises.resetCursor({ moduleId, level: activeLevel });
+        await loadBatch();
+      } catch (error) {
+        handleModuleError(error);
+      }
     });
     if (el.writingSubject) el.writingSubject.addEventListener('change', displayWritingSubject);
     if (el.writingAnswer) el.writingAnswer.addEventListener('input', updateWritingWordCount);
