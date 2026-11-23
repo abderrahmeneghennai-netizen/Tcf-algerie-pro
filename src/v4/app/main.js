@@ -1184,6 +1184,8 @@ function updateTrainingControls() {
 }
 async function chooseModule(code) {
   if (!moduleIds[code]) return;
+  if (el.bankCompletePanel) el.bankCompletePanel.hidden = true;
+  if (el.questionCard) el.questionCard.hidden = false;
   activeModule = code;
   moduleId = moduleIds[code];
   updateTrainingControls();
@@ -1206,6 +1208,8 @@ async function chooseModule(code) {
     batch.length + ' question(s) chargée(s).');
 }
 async function chooseLevel(level) {
+  if (el.bankCompletePanel) el.bankCompletePanel.hidden = true;
+  if (el.questionCard) el.questionCard.hidden = false;
   activeLevel = level;
   updateTrainingControls();
   if (activeModule === 'EO') {
