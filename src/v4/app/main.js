@@ -73,8 +73,7 @@ const el = {
   oralProductionsList: document.querySelector('#oralProductionsList'),
   questionCard: document.querySelector('.question-card'),
   progressLine: document.querySelector('.progress-line'),
-  b1Button: document.querySelector('#b1LevelButton'),
-  b2Button: document.querySelector('#b2LevelButton'),
+  levelButtons: document.querySelectorAll('[data-level]'),
   readingSupport: document.querySelector('#readingSupport'),
   readingTitle: document.querySelector('#readingTitle'),
   readingText: document.querySelector('#readingText'),
@@ -1059,8 +1058,7 @@ function updateTrainingControls() {
     card.classList.toggle('active-module', selected);
     card.setAttribute('aria-pressed', String(selected));
   });
-  el.b1Button?.classList.toggle('selected', activeLevel === 'B1');
-  el.b2Button?.classList.toggle('selected', activeLevel === 'B2');
+  el.levelButtons.forEach(button => button.classList.toggle('selected', button.dataset.level === activeLevel));
 }
 async function chooseModule(code) {
   if (!moduleIds[code]) return;
@@ -1173,8 +1171,7 @@ async function start() {
       el.audioTranscript.hidden = !el.audioTranscript.hidden;
       el.transcriptionButton.textContent = el.audioTranscript.hidden ? 'Afficher la transcription' : 'Masquer la transcription';
     });
-    if (el.b1Button) el.b1Button.addEventListener('click', () => chooseLevel('B1').catch(handleModuleError));
-    if (el.b2Button) el.b2Button.addEventListener('click', () => chooseLevel('B2').catch(handleModuleError));
+    el.levelButtons.forEach(button => button.addEventListener('click', () => chooseLevel(button.dataset.level).catch(handleModuleError)));
     await loadBatch();
     if (el.next) el.next.addEventListener('click', async () => {
       try {
