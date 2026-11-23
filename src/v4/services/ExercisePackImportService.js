@@ -7,6 +7,7 @@ import { BATCH_002 } from '../data/batch-002.js';
 import { BATCH_003 } from '../data/batch-003.js';
 import { BATCH_004_EDITORIAL_60 } from '../data/batch-004-editorial-60.js';
 import { BATCH_004_EDITORIAL } from '../data/batch-004-editorial.js';
+import { BATCH_005 } from '../data/batch-005.js';
 
 export class ExercisePackImportService {
   constructor(database) {
@@ -377,6 +378,91 @@ export class ExercisePackImportService {
         Number(totals.ee) !== 10 || Number(totals.eo) !== 10) {
       throw new Error('Vérification du lot 004 échouée : ' + JSON.stringify(totals));
     }
+    return { code: packCode, imported: 100, breakdown: totals };
+  }
+
+
+  async importFifthBatch() {
+    const data = BATCH_005;
+    const expected = { ce: 25, co: 25, ee: 13, eo: 13, editorial: 24 };
+    for (const [key, count] of Object.entries(expected)) {
+      if (!Array.isArray(data[key]) || data[key].length !== count) throw new Error('Lot 005 invalide : ' + key);
+    }
+    const allItems = [...data.ce, ...data.co, ...data.ee, ...data.eo, ...data.editorial];
+    if (allItems.length !== 100 || new Set(allItems.map(x => x.id)).size !== 100) throw new Error('Identifiants du lot 005 manquants ou dupliqués.');
+    for (const [kind, items] of Object.entries({ ce: data.ce, co: data.co })) {
+      for (const item of items) {
+        if (!item.id || !item.level || !item.genre || !item.prompt || !item.explanation ||
+            !Array.isArray(item.options) || item.options.length !== 4 || new Set(item.options).size !== 4 ||
+            !Number.isInteger(item.answer) || item.answer < 0 || item.answer > 3 ||
+            (kind === 'ce' ? !item.support : !item.transcript)) throw new Error('QCM invalide lot 005 : ' + item.id);
+      }
+    }
+    for (const item of data.editorial) {
+      if (!item.id || item.module !== 'GRAM' || !item.prompt || !item.explanation ||
+          !Array.isArray(item.options) || item.options.length !== 4 || new Set(item.options).size !== 4 ||
+          !item.options.includes(item.answer)) throw new Error('QCM grammaire/vocabulaire invalide : ' + item.id);
+    }
+    for (const [kind, items] of Object.entries({ ee: data.ee, eo: data.eo })) {
+      for (const item of items) {
+        if (!item.id || !item.task || !Array.isArray(item.criteria) || item.criteria.length !== 5 ||
+            item.criteria.reduce((sum, c) => sum + Number(c.points || 0), 0) !== 20 ||
+            (kind === 'ee' && !(item.minWords > 0 && item.maxWords >= item.minWords && item.timeMinutes > 0)) ||
+            (kind === 'eo' && !(item.durationMinutes > 0))) throw new Error('Sujet ouvert invalide lot 005 : ' + item.id);
+      }
+    }
+    const modules = await this.database.query("SELECT id, code FROM modules WHERE code IN ('GRAM','CE','CO','EE','EO') AND is_active=1");
+    const moduleIds = Object.fromEntries((modules.values ?? []).map(row => [row.code, row.id]));
+    for (const code of ['GRAM','CE','CO','EE','EO']) if (!moduleIds[code]) throw new Error('Module non initialisé : ' + code);
+    const packCode = data.code;
+    await this.database.transaction(async db => {
+      await db.run("INSERT OR IGNORE INTO packs (code,name,is_premium,description) VALUES (?,?,0,?)", [packCode, data.name, data.description]);
+      const packResult = await db.query("SELECT id FROM packs WHERE code=? LIMIT 1", [packCode]);
+      const packId = packResult.values?.[0]?.id;
+      if (!packId) throw new Error('Impossible de créer le pack du lot 005.');
+      await db.run("INSERT OR IGNORE INTO pack_versions (pack_id,version_number,checksum) VALUES (?,?,?)", [packId, 1, 'tcf-v4-lot-005-100-multi-competences']);
+      for (let i = 0; i < data.ce.length; i++) {
+        const item = data.ce[i], code = item.id.toLowerCase();
+        await db.run("INSERT OR IGNORE INTO supports_ecrits (pack_id,stable_code,titre,texte_contenu,source,is_archived) VALUES (?,?,?,?,?,0)", [packId, code, item.genre, item.support, 'Texte pédagogique — TCF ALGÉRIE PRO']);
+        const result = await db.query("SELECT id FROM supports_ecrits WHERE pack_id=? AND stable_code=? LIMIT 1", [packId, code]);
+        const supportId = result.values?.[0]?.id;
+        if (!supportId) throw new Error('Support CE absent : ' + item.id);
+        await db.run("INSERT OR IGNORE INTO exercices (stable_id,pack_id,module_id,support_ecrit_id,chapitre,niveau,difficulte,shuffle_key,enonce,options_json,bonne_reponse,explication,is_archived) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0)",
+          [item.id, packId, moduleIds.CE, supportId, item.genre, item.level, item.difficulty, 500000 + i + 1, item.prompt, JSON.stringify(item.options), item.options[item.answer], item.explanation]);
+      }
+      for (let i = 0; i < data.co.length; i++) {
+        const item = data.co[i], code = item.id.toLowerCase();
+        const duration = Math.max(15, Math.ceil(item.transcript.trim().split(/\s+/).length / 2.2));
+        await db.run("INSERT OR IGNORE INTO fichiers_audio (pack_id,stable_code,chemin_fichier,duree_secondes,transcription,is_archived) VALUES (?,?,?,?,?,0)", [packId, code, 'tts://fr-FR/' + code, duration, item.transcript]);
+        const result = await db.query("SELECT id FROM fichiers_audio WHERE pack_id=? AND stable_code=? LIMIT 1", [packId, code]);
+        const audioId = result.values?.[0]?.id;
+        if (!audioId) throw new Error('Audio CO absent : ' + item.id);
+        await db.run("INSERT OR IGNORE INTO exercices (stable_id,pack_id,module_id,audio_id,chapitre,niveau,difficulte,shuffle_key,enonce,options_json,bonne_reponse,explication,is_archived) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0)",
+          [item.id, packId, moduleIds.CO, audioId, item.genre, item.level, item.difficulty, 510000 + i + 1, item.prompt, JSON.stringify(item.options), item.options[item.answer], item.explanation]);
+      }
+      for (let i = 0; i < data.editorial.length; i++) {
+        const item = data.editorial[i];
+        await db.run("INSERT OR IGNORE INTO exercices (stable_id,pack_id,module_id,chapitre,niveau,difficulte,shuffle_key,enonce,options_json,bonne_reponse,explication,is_archived) VALUES (?,?,?,?,?,?,?,?,?,?,?,0)",
+          [item.id, packId, moduleIds.GRAM, item.chapter, item.level, item.difficulty, 520000 + i + 1, item.prompt, JSON.stringify(item.options), item.answer, item.explanation]);
+      }
+      for (const item of data.ee) {
+        await db.run("INSERT OR IGNORE INTO sujets_expression (pack_id,stable_code,module_id,niveau,consigne,duree_minutes,nb_mots_attendu,grille_evaluation_json,is_archived) VALUES (?,?,?,?,?,?,?,?,0)",
+          [packId, item.id, moduleIds.EE, item.level, item.task, item.timeMinutes, item.minWords + '-' + item.maxWords + ' mots', JSON.stringify(item.criteria)]);
+      }
+      for (const item of data.eo) {
+        await db.run("INSERT OR IGNORE INTO sujets_expression (pack_id,stable_code,module_id,niveau,consigne,duree_minutes,nb_mots_attendu,grille_evaluation_json,is_archived) VALUES (?,?,?,?,?,?,?,?,0)",
+          [packId, item.id, moduleIds.EO, item.level, item.task, item.durationMinutes, null, JSON.stringify(item.criteria)]);
+      }
+    });
+    const verifySql = "SELECT " +
+      "(SELECT COUNT(*) FROM exercices WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS ce, " +
+      "(SELECT COUNT(*) FROM exercices WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS co, " +
+      "(SELECT COUNT(*) FROM exercices WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS gram, " +
+      "(SELECT COUNT(*) FROM sujets_expression WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS ee, " +
+      "(SELECT COUNT(*) FROM sujets_expression WHERE pack_id=(SELECT id FROM packs WHERE code=?) AND module_id=?) AS eo";
+    const verify = await this.database.query(verifySql, [packCode,moduleIds.CE,packCode,moduleIds.CO,packCode,moduleIds.GRAM,packCode,moduleIds.EE,packCode,moduleIds.EO]);
+    const totals = verify.values?.[0] ?? {};
+    if (Number(totals.ce)!==25 || Number(totals.co)!==25 || Number(totals.gram)!==24 || Number(totals.ee)!==13 || Number(totals.eo)!==13) throw new Error('Vérification du lot 005 échouée : ' + JSON.stringify(totals));
     return { code: packCode, imported: 100, breakdown: totals };
   }
 
