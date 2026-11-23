@@ -134,10 +134,9 @@ const report = {
     invalidRecords: issues.length,
     details: issues
   },
-  integratedIntoCurrentImporter: {
-    file: 'src/v4/data/batch-004-editorial.js',
-    declaredQcm: '40',
-    note: 'Ces 40 QCM sont comptabilisés dans le total importé du lot 004.'
+  integratedPacks: {
+    lot004: { file: 'src/v4/data/batch-004-editorial.js', qcm: 40, activities: 100 },
+    lot005: { file: 'src/v4/data/batch-005.js', activities: 100, competences: { CE: 25, CO: 25, EE: 13, EO: 13, grammaireVocabulaire: 24 } }
   }
 };
 
